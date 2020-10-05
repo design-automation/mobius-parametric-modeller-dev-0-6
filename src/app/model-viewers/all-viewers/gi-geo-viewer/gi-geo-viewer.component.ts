@@ -30,4 +30,7 @@ export class GIGeoViewerComponent {
     constructor() {
     }
 
+    threejsAction() {
+    }
+
 }
