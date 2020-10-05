@@ -1,5 +1,6 @@
 <div id="gi-viewer-container">
     <threejs-geo-viewer [model]='data'
+    (action)="threejsAction($event)"
     ></threejs-geo-viewer>
     <!-- <button class='btn' id="settings_button" mat-icon-button (click)="openModal('settings_modal')" title="Settings"><mat-icon svgIcon="settings"></mat-icon></button> -->
 </div>
