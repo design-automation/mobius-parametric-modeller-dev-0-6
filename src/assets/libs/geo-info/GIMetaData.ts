@@ -171,6 +171,16 @@ export class GIMetaData {
         // this._data.time_stamp += 1;
         return this._data.time_stamp;
     }
+    //
+    public getEntCounts(): number[] {
+        return [
+            this._data.posi_count,
+            this._data.point_count,
+            this._data.pline_count,
+            this._data.pgon_count,
+            this._data.coll_count
+        ];
+    }
     // get next index
     public nextPosi(): number {
         const index: number = this._data.posi_count;

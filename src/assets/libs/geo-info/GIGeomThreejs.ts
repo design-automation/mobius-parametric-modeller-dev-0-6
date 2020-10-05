@@ -115,7 +115,7 @@ export class GIGeomThreejs {
         }
         // convert the mat_groups_map into the format required for threejs
         // for each material group, we need an array [start, count, mat_index]
-        const material_groups: [number, number, number][] = this._convertMatGroups(mat_groups_map);
+        const material_groups: [number, number, number][] = this._convertMatGroups(mat_groups_map, 3);
         // convert the verts list to a flat array
         // tslint:disable-next-line:no-unused-expression
         // @ts-ignore
@@ -220,7 +220,7 @@ export class GIGeomThreejs {
         }
         // convert the mat_groups_map into the format required for threejs
         // for each material group, we need an array [start, count, mat_index]
-        const material_groups: [number, number, number][] = this._convertMatGroups(mat_groups_map);
+        const material_groups: [number, number, number][] = this._convertMatGroups(mat_groups_map, 2);
         // convert the verts list to a flat array
         // tslint:disable-next-line:no-unused-expression
         // @ts-ignore
@@ -252,7 +252,7 @@ export class GIGeomThreejs {
      * Create a threejs material
      * @param settings
      */
-    private _convertMatGroups(mat_groups_map: Map<number, [number, number][]>): [number, number, number][] {
+    private _convertMatGroups(mat_groups_map: Map<number, [number, number][]>, num_verts: number): [number, number, number][] {
         // convert the mat_groups_map into the format required for threejs
         // for each material group, we need an array [start, count, mat_index]
         const material_groups: [number, number, number][] = []; // [start, count, mat_index][]
@@ -260,7 +260,7 @@ export class GIGeomThreejs {
             for (const start_end of start_end_arrs) {
                 const start: number = start_end[0];
                 const count: number = start_end[1] - start_end[0] + 1;
-                material_groups.push( [ start * 3, count * 3, mat_index ] );
+                material_groups.push( [ start * num_verts, count * num_verts, mat_index ] );
             }
         });
         return material_groups;

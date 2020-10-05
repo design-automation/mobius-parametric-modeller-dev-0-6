@@ -34,7 +34,7 @@ export class DataThreejsBase {
     // interaction and selection
     public tri_select_map: Map<number, number>;
     public edge_select_map: Map<number, number>;
-    public white_edge_select_map: Map<number, number>;
+    // public white_edge_select_map: Map<number, number>;
     public point_select_map: Map<number, number>;
     public point_label: any[];
     public posis_map: Map<number, number>;
@@ -92,7 +92,7 @@ export class DataThreejsBase {
 
     // BufferGeoms
     // protected _buffer_geoms: THREE.BufferGeometry[] = [];
-    protected _all_objs_sphere: THREE.Sphere;
+    public _all_objs_sphere: THREE.Sphere;
 
     protected _text_font: THREE.Font;
 

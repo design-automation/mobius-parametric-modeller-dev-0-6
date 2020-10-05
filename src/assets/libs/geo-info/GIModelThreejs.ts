@@ -60,8 +60,6 @@ export class GIModelThreejs {
             point_select_map: point_select_map,
             edge_indices: edges_verts_i,
             edge_select_map: edge_select_map,
-            white_edge_indices: [], // TODO remove
-            white_edge_select_map: new Map(), // TODO remove
             tri_indices: tris_verts_i,
             tri_select_map: tri_select_map,
             pline_materials: pline_materials,
