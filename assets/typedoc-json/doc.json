@@ -1,6 +1,6 @@
 {
 	"id": 0,
-	"name": "mobius-parametric-modeller - v0.6.1",
+	"name": "mobius-parametric-modeller - v0.6.2",
 	"kind": 0,
 	"flags": {},
 	"children": [
@@ -32480,7 +32480,7 @@
 							"sources": [
 								{
 									"fileName": "core/modules/basic/make.ts",
-									"line": 1382,
+									"line": 1388,
 									"character": 14
 								}
 							],
@@ -32497,7 +32497,7 @@
 							"sources": [
 								{
 									"fileName": "core/modules/basic/make.ts",
-									"line": 1383,
+									"line": 1389,
 									"character": 14
 								}
 							],
@@ -32514,7 +32514,7 @@
 							"sources": [
 								{
 									"fileName": "core/modules/basic/make.ts",
-									"line": 1384,
+									"line": 1390,
 									"character": 13
 								}
 							],
@@ -32535,7 +32535,7 @@
 					"sources": [
 						{
 							"fileName": "core/modules/basic/make.ts",
-							"line": 1381,
+							"line": 1387,
 							"character": 23
 						}
 					]
@@ -32756,7 +32756,7 @@
 							"sources": [
 								{
 									"fileName": "core/modules/basic/make.ts",
-									"line": 551,
+									"line": 557,
 									"character": 16
 								}
 							],
@@ -32773,7 +32773,7 @@
 							"sources": [
 								{
 									"fileName": "core/modules/basic/make.ts",
-									"line": 555,
+									"line": 561,
 									"character": 15
 								}
 							],
@@ -32790,7 +32790,7 @@
 							"sources": [
 								{
 									"fileName": "core/modules/basic/make.ts",
-									"line": 553,
+									"line": 559,
 									"character": 20
 								}
 							],
@@ -32807,7 +32807,7 @@
 							"sources": [
 								{
 									"fileName": "core/modules/basic/make.ts",
-									"line": 556,
+									"line": 562,
 									"character": 10
 								}
 							],
@@ -32824,7 +32824,7 @@
 							"sources": [
 								{
 									"fileName": "core/modules/basic/make.ts",
-									"line": 550,
+									"line": 556,
 									"character": 14
 								}
 							],
@@ -32841,7 +32841,7 @@
 							"sources": [
 								{
 									"fileName": "core/modules/basic/make.ts",
-									"line": 554,
+									"line": 560,
 									"character": 13
 								}
 							],
@@ -32858,7 +32858,7 @@
 							"sources": [
 								{
 									"fileName": "core/modules/basic/make.ts",
-									"line": 552,
+									"line": 558,
 									"character": 18
 								}
 							],
@@ -32883,7 +32883,7 @@
 					"sources": [
 						{
 							"fileName": "core/modules/basic/make.ts",
-							"line": 549,
+							"line": 555,
 							"character": 24
 						}
 					]
@@ -33165,7 +33165,7 @@
 					"sources": [
 						{
 							"fileName": "core/modules/basic/make.ts",
-							"line": 1405,
+							"line": 1411,
 							"character": 19
 						}
 					]
@@ -33292,7 +33292,7 @@
 					"sources": [
 						{
 							"fileName": "core/modules/basic/make.ts",
-							"line": 1300,
+							"line": 1306,
 							"character": 22
 						}
 					]
@@ -33453,7 +33453,7 @@
 					"sources": [
 						{
 							"fileName": "core/modules/basic/make.ts",
-							"line": 820,
+							"line": 826,
 							"character": 23
 						}
 					]
@@ -33559,7 +33559,7 @@
 					"sources": [
 						{
 							"fileName": "core/modules/basic/make.ts",
-							"line": 440,
+							"line": 446,
 							"character": 20
 						}
 					]
@@ -33697,7 +33697,7 @@
 					"sources": [
 						{
 							"fileName": "core/modules/basic/make.ts",
-							"line": 531,
+							"line": 537,
 							"character": 20
 						}
 					]
@@ -34331,7 +34331,7 @@
 					"sources": [
 						{
 							"fileName": "core/modules/basic/make.ts",
-							"line": 1098,
+							"line": 1104,
 							"character": 21
 						}
 					]
@@ -34509,7 +34509,7 @@
 					"sources": [
 						{
 							"fileName": "core/modules/basic/make.ts",
-							"line": 1547,
+							"line": 1553,
 							"character": 20
 						}
 					]
@@ -34670,7 +34670,7 @@
 					"sources": [
 						{
 							"fileName": "core/modules/basic/make.ts",
-							"line": 1565,
+							"line": 1571,
 							"character": 23
 						}
 					]
@@ -34773,7 +34773,7 @@
 					"sources": [
 						{
 							"fileName": "core/modules/basic/make.ts",
-							"line": 1486,
+							"line": 1492,
 							"character": 18
 						}
 					]
@@ -34839,7 +34839,7 @@
 					"sources": [
 						{
 							"fileName": "core/modules/basic/make.ts",
-							"line": 1534,
+							"line": 1540,
 							"character": 20
 						}
 					]
@@ -34911,7 +34911,7 @@
 					"sources": [
 						{
 							"fileName": "core/modules/basic/make.ts",
-							"line": 1542,
+							"line": 1548,
 							"character": 21
 						}
 					]
@@ -34977,7 +34977,7 @@
 					"sources": [
 						{
 							"fileName": "core/modules/basic/make.ts",
-							"line": 1524,
+							"line": 1530,
 							"character": 24
 						}
 					]
@@ -35070,7 +35070,7 @@
 					"sources": [
 						{
 							"fileName": "core/modules/basic/make.ts",
-							"line": 1320,
+							"line": 1326,
 							"character": 16
 						}
 					]
@@ -35148,7 +35148,7 @@
 					"sources": [
 						{
 							"fileName": "core/modules/basic/make.ts",
-							"line": 1340,
+							"line": 1346,
 							"character": 20
 						}
 					]
@@ -35262,7 +35262,7 @@
 					"sources": [
 						{
 							"fileName": "core/modules/basic/make.ts",
-							"line": 1054,
+							"line": 1060,
 							"character": 17
 						}
 					]
@@ -35349,7 +35349,7 @@
 					"sources": [
 						{
 							"fileName": "core/modules/basic/make.ts",
-							"line": 1036,
+							"line": 1042,
 							"character": 20
 						}
 					]
@@ -35440,7 +35440,7 @@
 					"sources": [
 						{
 							"fileName": "core/modules/basic/make.ts",
-							"line": 875,
+							"line": 881,
 							"character": 21
 						}
 					]
@@ -35542,7 +35542,7 @@
 					"sources": [
 						{
 							"fileName": "core/modules/basic/make.ts",
-							"line": 855,
+							"line": 861,
 							"character": 23
 						}
 					]
@@ -35632,7 +35632,7 @@
 					"sources": [
 						{
 							"fileName": "core/modules/basic/make.ts",
-							"line": 885,
+							"line": 891,
 							"character": 21
 						}
 					]
@@ -35722,7 +35722,7 @@
 					"sources": [
 						{
 							"fileName": "core/modules/basic/make.ts",
-							"line": 900,
+							"line": 906,
 							"character": 22
 						}
 					]
@@ -35812,7 +35812,7 @@
 					"sources": [
 						{
 							"fileName": "core/modules/basic/make.ts",
-							"line": 973,
+							"line": 979,
 							"character": 21
 						}
 					]
@@ -35902,7 +35902,7 @@
 					"sources": [
 						{
 							"fileName": "core/modules/basic/make.ts",
-							"line": 942,
+							"line": 948,
 							"character": 26
 						}
 					]
@@ -35974,7 +35974,7 @@
 					"sources": [
 						{
 							"fileName": "core/modules/basic/make.ts",
-							"line": 484,
+							"line": 490,
 							"character": 30
 						}
 					]
@@ -36229,7 +36229,7 @@
 					"sources": [
 						{
 							"fileName": "core/modules/basic/make.ts",
-							"line": 471,
+							"line": 477,
 							"character": 14
 						}
 					]
@@ -36328,7 +36328,7 @@
 					"sources": [
 						{
 							"fileName": "core/modules/basic/make.ts",
-							"line": 768,
+							"line": 774,
 							"character": 14
 						}
 					]
@@ -36399,7 +36399,7 @@
 					"sources": [
 						{
 							"fileName": "core/modules/basic/make.ts",
-							"line": 729,
+							"line": 735,
 							"character": 20
 						}
 					]
@@ -36482,7 +36482,7 @@
 					"sources": [
 						{
 							"fileName": "core/modules/basic/make.ts",
-							"line": 558,
+							"line": 564,
 							"character": 19
 						}
 					]
@@ -36565,7 +36565,7 @@
 					"sources": [
 						{
 							"fileName": "core/modules/basic/make.ts",
-							"line": 666,
+							"line": 672,
 							"character": 18
 						}
 					]
@@ -36648,7 +36648,7 @@
 					"sources": [
 						{
 							"fileName": "core/modules/basic/make.ts",
-							"line": 625,
+							"line": 631,
 							"character": 23
 						}
 					]
@@ -37138,7 +37138,7 @@
 					"sources": [
 						{
 							"fileName": "core/modules/basic/make.ts",
-							"line": 1146,
+							"line": 1152,
 							"character": 15
 						}
 					]
@@ -37216,7 +37216,7 @@
 					"sources": [
 						{
 							"fileName": "core/modules/basic/make.ts",
-							"line": 1224,
+							"line": 1230,
 							"character": 21
 						}
 					]
@@ -37296,7 +37296,7 @@
 					"sources": [
 						{
 							"fileName": "core/modules/basic/make.ts",
-							"line": 1230,
+							"line": 1236,
 							"character": 20
 						}
 					]
@@ -37374,7 +37374,7 @@
 					"sources": [
 						{
 							"fileName": "core/modules/basic/make.ts",
-							"line": 1173,
+							"line": 1179,
 							"character": 20
 						}
 					]
@@ -37452,7 +37452,7 @@
 					"sources": [
 						{
 							"fileName": "core/modules/basic/make.ts",
-							"line": 1214,
+							"line": 1220,
 							"character": 19
 						}
 					]
@@ -37530,7 +37530,7 @@
 					"sources": [
 						{
 							"fileName": "core/modules/basic/make.ts",
-							"line": 1203,
+							"line": 1209,
 							"character": 24
 						}
 					]
