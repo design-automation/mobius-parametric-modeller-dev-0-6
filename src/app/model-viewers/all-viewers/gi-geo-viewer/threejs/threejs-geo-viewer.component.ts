@@ -222,6 +222,11 @@ export class ThreejsGeoViewerComponent implements OnInit, OnChanges {
                 projection: 'EPSG:3857',
                 format: 'image/png',
                 url: 'https://a.tile.openstreetmap.org/${z}/${x}/${y}.png',
+                attribution: {
+                    name: 'OpenStreetMap',
+                    url: 'http://www.openstreetmap.org/',
+                    html: ''
+                },
                 tileMatrixSet: 'PM',
                 zoom: {
                     min: 0,
