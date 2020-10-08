@@ -15,6 +15,7 @@ import { GIGeoViewerComponent } from './gi-geo-viewer.component';
 
 import { ModalService } from './html/modal-window.service';
 import { DataGeoService } from './data/data.geo.service';
+import { ThreeGeoComponent } from './threejs/three-geo-viewer.component';
 
 /**
  * GIViewer
@@ -22,7 +23,8 @@ import { DataGeoService } from './data/data.geo.service';
  */
 @NgModule({
     declarations: [
-        GIGeoViewerComponent
+        GIGeoViewerComponent,
+        ThreeGeoComponent
     ],
     exports: [
         GIGeoViewerComponent

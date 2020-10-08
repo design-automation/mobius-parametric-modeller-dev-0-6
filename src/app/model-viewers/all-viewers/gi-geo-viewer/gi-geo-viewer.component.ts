@@ -9,7 +9,7 @@ import { Vector3, GridHelper } from 'three';
 import { SplitComponent } from 'angular-split';
 import { DataGeoService } from './data/data.geo.service';
 import { API_MAPS, API_MAPS_KEY_MAPPING, DataGeo } from './data/data.geo';
-import { GeoSettings } from './gi-geo-viewer.settings';
+import { GeoSettings, geo_default_settings } from './gi-geo-viewer.settings';
 import { ModalService } from './html/modal-window.service';
 import { DataService as ThreeJSDataService } from '../gi-viewer/data/data.service';
 
@@ -22,7 +22,7 @@ import { DataService as ThreeJSDataService } from '../gi-viewer/data/data.servic
     templateUrl: './gi-geo-viewer.component.html',
     styleUrls: ['./gi-geo-viewer.component.scss'],
 })
-export class GIGeoViewerComponent implements OnInit, OnChanges {
+export class GIGeoViewerComponent {
     // model data passed to the viewer
     @Input() data: GIModel;
 
@@ -37,17 +37,6 @@ export class GIGeoViewerComponent implements OnInit, OnChanges {
      */
     constructor(private dataService: DataGeoService, private modalService: ModalService, private threeJSDataService: ThreeJSDataService) {
     }
-
-    ngOnInit() {
-        this.dataService.createGeoViewer(this.threeJSDataService.getThreejsScene());
-    }
-
-    ngOnChanges(changes) {
-        if (changes.data) {
-            this.dataService.getGeoScene().onChanges(changes, this.threeJSDataService.getThreejsScene());
-        }
-    }
-
 
     zoomfit() {
         // const camera = this.dataService.getCesiumScene()._camera;

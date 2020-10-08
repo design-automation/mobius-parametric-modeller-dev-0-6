@@ -3,7 +3,7 @@ import { GeoSettings } from '../gi-geo-viewer.settings';
 import { EEntType, Txyz, TAttribDataTypes, LONGLAT } from '@libs/geo-info/common';
 import * as itowns from 'itowns/dist/itowns';
 import { DataService } from '../../gi-viewer/data/data.service';
-import THREE from 'three';
+import * as THREE from 'three';
 
 
 export const API_MAPS = [
