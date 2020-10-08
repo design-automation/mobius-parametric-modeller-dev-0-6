@@ -1,46 +1,71 @@
 import { GIModel } from '@libs/geo-info/GIModel';
-// import * as itowns from 'itowns';
+import { GeoSettings } from '../gi-geo-viewer.settings';
+import { EEntType, Txyz, TAttribDataTypes, LONGLAT } from '@libs/geo-info/common';
 import * as itowns from 'itowns/dist/itowns';
-// import {setupLoadingScreen} from '../itowns/LoadingScreen';
-import { DataThreejs } from '../../gi-viewer/data/data.threejs';
 import { DataService } from '../../gi-viewer/data/data.service';
-import {
-    Component, Input, OnChanges, OnInit
-} from '@angular/core';
-import * as THREE from 'three';
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+import THREE from 'three';
 
-const LONGLAT = [103.778329, 1.298759];
+
+export const API_MAPS = [
+                            'Here map normal',
+                            'Here map normal grey',
+                            'Here map normal traffic',
+                            'Here map normal reduced',
+                            'Here map normal pedestrian',
+                            'Here map aerial terrain',
+                            'Here map aerial satellite',
+                            'Here map aerial hybrid',
+                            'Bing Map'
+                        ];
+export const API_MAPS_KEY_MAPPING = {
+    'Here map normal': 'here',
+    'Here map normal grey': 'here',
+    'Here map normal traffic': 'here',
+    'Here map normal reduced': 'here',
+    'Here map normal pedestrian': 'here',
+    'Here map aerial terrain': 'here',
+    'Here map aerial satellite': 'here',
+    'Here map aerial hybrid': 'here',
+    'Bing Map': 'bing'
+};
 
 /**
- * A threejs viewer for viewing geo-info (GI) models.
- * This component gets used in /app/model-viewers/all-viewers/gi-viewer/gi-viewer.component.html
+ * Cesium data
  */
-@Component({
-    selector: 'threejs-geo-viewer',
-    templateUrl: './threejs-geo-viewer.component.html',
-    styleUrls: ['./threejs-geo-viewer.component.scss']
-})
+export class DataGeo {
+    public viewer: any;
+    // the GI model to display
+    public model: GIModel;
 
-export class ThreejsGeoViewerComponent implements OnInit, OnChanges {
-    @Input() model: GIModel;
-    public _data_threejs: DataThreejs;
-    _container;
-    _view;
-    _camTarget;
-    _viewColorLayers = [];
-    _viewElevationLayers = [];
+    // Geo Settings
+    public settings: GeoSettings;
+    public attribution: string;
+
+    public container;
+    public view;
+    public camTarget;
+    public viewColorLayers = [];
+    public viewElevationLayers = [];
 
     _____x = 0;
     _____y = 0;
 
-    constructor(private dataService: DataService) {
+    /**
+     * Constructs a new data subscriber.
+     */
+    constructor(settings: GeoSettings) {
+        this.settings = JSON.parse(JSON.stringify(settings));
+        this._getLayers();
+        this._getTerrains();
     }
 
-    ngOnInit() {
-        this.getLayers();
-        this.getTerrains();
-        this._data_threejs = this.dataService.getThreejsScene();
+    // matrix points from xyz to long lat
+    /**
+     *
+     */
+    public createGeoViewer(threejsScene) {
+        this._getLayers();
+        this._getTerrains();
 
         const placement = {
             coord: new itowns.Coordinates('EPSG:4326', LONGLAT[0], LONGLAT[1]),
@@ -49,12 +74,12 @@ export class ThreejsGeoViewerComponent implements OnInit, OnChanges {
         };
 
 
-        this._container = document.getElementById('threejs-geo-container');
-        this._view = new itowns.GlobeView(this._container, placement);
-        this._view.mainLoop.gfxEngine.renderer.shadowMap.enabled = true;
-        this._view.mainLoop.gfxEngine.renderer.shadowMap.type = itowns.THREE.PCFShadowMap;
+        this.container = document.getElementById('threejs-geo-container');
+        this.view = new itowns.GlobeView(this.container, placement);
+        this.view.mainLoop.gfxEngine.renderer.shadowMap.enabled = true;
+        this.view.mainLoop.gfxEngine.renderer.shadowMap.type = itowns.THREE.PCFShadowMap;
 
-        this._camTarget = this._view.controls.getLookAtCoordinate();
+        this.camTarget = this.view.controls.getLookAtCoordinate();
 
         // default orbit control:
         // DOLLY: {mouseButton: 1, enable: true}
@@ -63,11 +88,11 @@ export class ThreejsGeoViewerComponent implements OnInit, OnChanges {
         // ORBIT: {mouseButton: 0, keyboard: 17, enable: true, finger: 2}
         // PAN: {mouseButton: 2, up: 38, bottom: 40, left: 37, right: 39, up: 38}
         // PANORAMIC: {mouseButton: 0, keyboard: 16, enable: true}
-        this._view.controls.states.ORBIT = {mouseButton: 0, enable: true, finger: 2};
-        // this._view.controls.states.PAN = {mouseButton: 2, bottom: 40, left: 37, right: 39, up: 38, enable: true};
-        // this._view.controls.states.MOVE_GLOBE = {mouseButton: 0, keyboard: 17, enable: true, finger: 1};
-        this._view.controls.states.PAN = {mouseButton: 0, keyboard: 17, enable: true, finger: 1};
-        this._view.controls.states.MOVE_GLOBE = {mouseButton: 2, bottom: 40, left: 37, right: 39, up: 38, enable: true};
+        this.view.controls.states.ORBIT = {mouseButton: 0, enable: true, finger: 2};
+        // this.view.controls.states.PAN = {mouseButton: 2, bottom: 40, left: 37, right: 39, up: 38, enable: true};
+        // this.view.controls.states.MOVE_GLOBE = {mouseButton: 0, keyboard: 17, enable: true, finger: 1};
+        this.view.controls.states.PAN = {mouseButton: 0, keyboard: 17, enable: true, finger: 1};
+        this.view.controls.states.MOVE_GLOBE = {mouseButton: 2, bottom: 40, left: 37, right: 39, up: 38, enable: true};
 
 
         // const orthoSource = new itowns.TMSSource({
@@ -98,57 +123,142 @@ export class ThreejsGeoViewerComponent implements OnInit, OnChanges {
         //     tileMatrixSet: 'PM',
         // });
 
-        this._view.addLayer(this._viewColorLayers[this._____x]);
-        if (this._viewElevationLayers[this._____y]) {
-            this._view.addLayer(this._viewElevationLayers[this._____y]);
+        this.view.addLayer(this.viewColorLayers[this._____x]);
+        if (this.viewElevationLayers[this._____y]) {
+            this.view.addLayer(this.viewElevationLayers[this._____y]);
         }
-        // const atmosphere = this._view.getLayerById('atmosphere');
+        // const atmosphere = this.view.getLayerById('atmosphere');
         // atmosphere.setRealisticOn(true);
 
-        if (this.model && this._data_threejs.model && this._data_threejs.model === this.model) {
-            this.refreshModel();
+        if (this.model && threejsScene.model && threejsScene.model === this.model) {
+            this.refreshModel(threejsScene);
         }
-        this._view.notifyChange();
+        this.view.notifyChange();
     }
 
-    ngOnChanges(changes) {
-        if (changes.model) {
-            if (!this._data_threejs) { return; }
+    onChanges(changes, threejsScene) {
+        if (changes.data) {
+            if (!threejsScene) { return; }
             if (!this.model) {
                 this.removeMobiusObjs();
                 return;
             }
-            if (!this._data_threejs.model || this._data_threejs.model !== this.model) {
-                this._data_threejs.model = this.model;
-                this._data_threejs.populateScene(this.model, null);
+            if (!threejsScene.model || threejsScene.model !== this.model) {
+                threejsScene.model = this.model;
+                threejsScene.populateScene(this.model, null);
             }
-            this.refreshModel();
-            this._view.notifyChange();
+            this.refreshModel(threejsScene);
+            this.view.notifyChange();
         }
+    }
+
+    public updateSettings(settings: GeoSettings = null) {
+        let newSetting: GeoSettings;
+        if (settings !== null) {
+            newSetting = <GeoSettings> JSON.parse(JSON.stringify(settings));
+        } else {
+            newSetting = <GeoSettings> JSON.parse(localStorage.getItem('cesium_settings'));
+        }
+        if (!newSetting) { return; }
+        if (newSetting.imagery) {
+            if (newSetting.imagery.layer && this.settings.imagery.layer !== newSetting.imagery.layer) {
+                for (const layerProvider of this.viewColorLayers) {
+                    if (layerProvider.name === newSetting.imagery.layer) {
+                        const viewer_layers = this.viewer.imageryLayers;
+                        const newLayer = new Cesium.ImageryLayer(layerProvider.creationCommand(
+                            this.settings.imagery.apiKey[API_MAPS_KEY_MAPPING[this.settings.imagery.layer]]));
+                        viewer_layers.removeAll();
+                        viewer_layers.add(newLayer);
+                        this.settings.imagery.layer = newSetting.imagery.layer;
+                    }
+                }
+            }
+            if (newSetting.imagery.apiKey) {
+                if (!this.settings.imagery.apiKey) {
+                    this.settings.imagery.apiKey = {};
+                }
+                for (const i of Object.keys(newSetting.imagery.apiKey)) {
+                    this.settings.imagery.apiKey[i] = newSetting.imagery.apiKey[i];
+                }
+            }
+            if (newSetting.imagery.terrain && this.settings.imagery.terrain !== newSetting.imagery.terrain) {
+                for (const terrainProvider of this.viewElevationLayers) {
+                    if (terrainProvider.name === newSetting.imagery.terrain) {
+                        this.viewer.terrainProvider = terrainProvider.creationCommand();
+                        this.settings.imagery.terrain = newSetting.imagery.terrain;
+                    }
+                }
+            }
+        }
+        if (newSetting.camera) {
+            if (newSetting.camera.pos) {
+                this.settings.camera.pos.x = newSetting.camera.pos.x;
+                this.settings.camera.pos.y = newSetting.camera.pos.y;
+                this.settings.camera.pos.z = newSetting.camera.pos.z;
+                this.settings.camera.direction.x = newSetting.camera.direction.x;
+                this.settings.camera.direction.y = newSetting.camera.direction.y;
+                this.settings.camera.direction.z = newSetting.camera.direction.z;
+                this.settings.camera.up.x = newSetting.camera.up.x;
+                this.settings.camera.up.y = newSetting.camera.up.y;
+                this.settings.camera.up.z = newSetting.camera.up.z;
+                this.settings.camera.right.x = newSetting.camera.right.x;
+                this.settings.camera.right.y = newSetting.camera.right.y;
+                this.settings.camera.right.z = newSetting.camera.right.z;
+            }
+        }
+        if (newSetting.time) {
+            if (newSetting.time.date) {
+                this.settings.time.date = newSetting.time.date;
+                if (this.settings.time.date.indexOf('T') === -1) {
+                    Cesium.JulianDate.fromIso8601(this.settings.time.date, this.viewer.clock.currentTime);
+                    Cesium.JulianDate.addDays(this.viewer.clock.currentTime, -1, this.viewer.clock.startTime);
+                    Cesium.JulianDate.addDays(this.viewer.clock.currentTime, 1, this.viewer.clock.stopTime);
+                    this.viewer.timeline.zoomTo(this.viewer.clock.startTime, this.viewer.clock.stopTime);
+                } else {
+                    Cesium.JulianDate.fromIso8601(this.settings.time.date.split('T')[0], this.viewer.clock.currentTime);
+                    Cesium.JulianDate.addDays(this.viewer.clock.currentTime, -1, this.viewer.clock.startTime);
+                    Cesium.JulianDate.addDays(this.viewer.clock.currentTime, 1, this.viewer.clock.stopTime);
+                    Cesium.JulianDate.fromIso8601(this.settings.time.date + ':00Z', this.viewer.clock.currentTime);
+                    this.viewer.timeline.zoomTo(this.viewer.clock.startTime, this.viewer.clock.stopTime);
+                }
+            }
+        }
+        // if (newSetting.model) {
+        //     if (newSetting.model.polygonEdge !== this.settings.model.polygonEdge) {
+        //         this.settings.model.polygonEdge = newSetting.model.polygonEdge;
+        //         setTimeout(() => {
+        //             this.addGeometry(this.model, null, false);
+        //         }, 0);
+        //     }
+        // }
+        if (newSetting.updated) {
+            this.settings.updated = newSetting.updated;
+        }
+        localStorage.setItem('geo_settings', JSON.stringify(this.settings));
     }
 
     removeMobiusObjs() {
         let i = 0;
-        while (i < this._view.scene.children.length) {
-            const scene_obj = this._view.scene.children[i];
+        while (i < this.view.scene.children.length) {
+            const scene_obj = this.view.scene.children[i];
             if (scene_obj.name.startsWith('mobius')) {
-                this._view.scene.children.splice(i, 1);
+                this.view.scene.children.splice(i, 1);
             } else {
                 i++;
             }
         }
     }
 
-    refreshModel() {
+    refreshModel(threejsScene) {
         this.removeMobiusObjs();
         const threeJSGroup = new itowns.THREE.Group();
         threeJSGroup.name = 'mobius_geom';
 
-        const camTarget = this._camTarget.clone();
+        const camTarget = this.camTarget.clone();
         camTarget.altitude += 2;
-        const cameraTargetPosition = camTarget.as(this._view.referenceCrs);
+        const cameraTargetPosition = camTarget.as(this.view.referenceCrs);
 
-        for (const i of this._data_threejs.scene.children) {
+        for (const i of threejsScene.scene.children) {
             if (i.name.startsWith('obj_')) {
                 // console.log(i)
                 threeJSGroup.add(i.clone());
@@ -158,9 +268,9 @@ export class ThreejsGeoViewerComponent implements OnInit, OnChanges {
         threeJSGroup.lookAt(new THREE.Vector3(0, 0, 0));
         threeJSGroup.rotateY(Math.PI);
         threeJSGroup.updateMatrixWorld();
-        this._view.scene.add(threeJSGroup);
+        this.view.scene.add(threeJSGroup);
 
-        const scale = this._data_threejs._all_objs_sphere.radius;
+        const scale = threejsScene._all_objs_sphere.radius;
         const azimuth = 50;
         const altitude = 90;
 
@@ -169,7 +279,7 @@ export class ThreejsGeoViewerComponent implements OnInit, OnChanges {
         lightTarget.position.copy(cameraTargetPosition);
         lightTarget.name = 'lightTarget';
         lightTarget.updateMatrixWorld();
-        this._view.scene.add(lightTarget);
+        this.view.scene.add(lightTarget);
 
         const lighting = new itowns.THREE.DirectionalLight(0xFFFFFF, 1);
         lighting.name = 'mobius_lighting';
@@ -183,7 +293,7 @@ export class ThreejsGeoViewerComponent implements OnInit, OnChanges {
         lighting.shadow.bias = -0.0003;
 
         camTarget.altitude = scale * 1.5;
-        lighting.position.copy(camTarget.as(this._view.referenceCrs));
+        lighting.position.copy(camTarget.as(this.view.referenceCrs));
 
         const cam = <THREE.OrthographicCamera> lighting.shadow.camera;
         cam.up.set(0, 0, 1);
@@ -194,19 +304,14 @@ export class ThreejsGeoViewerComponent implements OnInit, OnChanges {
 
         lighting.updateMatrixWorld();
 
-        this._view.scene.add(lighting);
+        this.view.scene.add(lighting);
     }
 
 
-    onMouseDown(event) {
-    }
-
-    onMouseUp(event) {
-    }
-
-    getLayers() {
-        this._viewColorLayers = [];
-        // this._viewColorLayers.push(new Cesium.ProviderViewModel({
+    // PRIVATE METHODS
+    private _getLayers() {
+        this.viewColorLayers = [];
+        // this.viewColorLayers.push(new Cesium.ProviderViewModel({
         //     name: 'Terrain(Background)',
         //     iconUrl: Cesium.buildModuleUrl('Widgets/Images/TerrainProviders/CesiumWorldTerrain.png'),
         //     tooltip: 'Stamen World terrain (Background).\nhttp://www.maps.stamen.com/',
@@ -216,7 +321,7 @@ export class ThreejsGeoViewerComponent implements OnInit, OnChanges {
         //         });
         //     },
         // }));
-        this._viewColorLayers.push(new itowns.ColorLayer('Ortho', {
+        this.viewColorLayers.push(new itowns.ColorLayer('Ortho', {
             source: new itowns.TMSSource({
                 name: 'OpenStreetMap',
                 projection: 'EPSG:3857',
@@ -234,7 +339,7 @@ export class ThreejsGeoViewerComponent implements OnInit, OnChanges {
                 }
             })
         }));
-        this._viewColorLayers.push(new itowns.ColorLayer('Ortho', {
+        this.viewColorLayers.push(new itowns.ColorLayer('Ortho', {
             source: new itowns.TMSSource({
                 name: 'OpenTopoMap',
                 projection: 'EPSG:3857',
@@ -248,7 +353,7 @@ export class ThreejsGeoViewerComponent implements OnInit, OnChanges {
             })
         }));
 
-        this._viewColorLayers.push(new itowns.ColorLayer('Ortho', {
+        this.viewColorLayers.push(new itowns.ColorLayer('Ortho', {
             source: new itowns.TMSSource({
                 name: 'Stamen Toner',
                 projection: 'EPSG:3857',
@@ -257,7 +362,7 @@ export class ThreejsGeoViewerComponent implements OnInit, OnChanges {
                 tileMatrixSet: 'PM'
             })
         }));
-        this._viewColorLayers.push(new itowns.ColorLayer('Ortho', {
+        this.viewColorLayers.push(new itowns.ColorLayer('Ortho', {
             source: new itowns.TMSSource({
                 name: 'Stamen terrain',
                 projection: 'EPSG:3857',
@@ -270,7 +375,7 @@ export class ThreejsGeoViewerComponent implements OnInit, OnChanges {
                 }
             })
         }));
-        this._viewColorLayers.push(new itowns.ColorLayer('Ortho', {
+        this.viewColorLayers.push(new itowns.ColorLayer('Ortho', {
             source: new itowns.TMSSource({
                 name: 'Stamen watercolor',
                 projection: 'EPSG:3857',
@@ -284,9 +389,7 @@ export class ThreejsGeoViewerComponent implements OnInit, OnChanges {
             })
         }));
 
-        this._____x = 8;
-
-        this._viewColorLayers.push(new itowns.ColorLayer('Ortho', {
+        this.viewColorLayers.push(new itowns.ColorLayer('Ortho', {
             source: new itowns.TMSSource({
                 name: 'Google map roadmap',
                 projection: 'EPSG:3857',
@@ -295,7 +398,7 @@ export class ThreejsGeoViewerComponent implements OnInit, OnChanges {
                 tileMatrixSet: 'PM',
             })
         }));
-        this._viewColorLayers.push(new itowns.ColorLayer('Ortho', {
+        this.viewColorLayers.push(new itowns.ColorLayer('Ortho', {
             source: new itowns.TMSSource({
                 name: 'Google map altered roadmap',
                 projection: 'EPSG:3857',
@@ -304,7 +407,7 @@ export class ThreejsGeoViewerComponent implements OnInit, OnChanges {
                 tileMatrixSet: 'PM',
             })
         }));
-        this._viewColorLayers.push(new itowns.ColorLayer('Ortho', {
+        this.viewColorLayers.push(new itowns.ColorLayer('Ortho', {
             source: new itowns.TMSSource({
                 name: 'Google map satellite only',
                 projection: 'EPSG:3857',
@@ -313,7 +416,7 @@ export class ThreejsGeoViewerComponent implements OnInit, OnChanges {
                 tileMatrixSet: 'PM',
             })
         }));
-        this._viewColorLayers.push(new itowns.ColorLayer('Ortho', {
+        this.viewColorLayers.push(new itowns.ColorLayer('Ortho', {
             source: new itowns.TMSSource({
                 name: 'Google map hybrid',
                 projection: 'EPSG:3857',
@@ -322,7 +425,7 @@ export class ThreejsGeoViewerComponent implements OnInit, OnChanges {
                 tileMatrixSet: 'PM',
             })
         }));
-        this._viewColorLayers.push(new itowns.ColorLayer('Ortho', {
+        this.viewColorLayers.push(new itowns.ColorLayer('Ortho', {
             source: new itowns.WMTSSource({
                 name: 'ArcGIS Terrain',
                 projection: 'EPSG:3857',
@@ -338,7 +441,7 @@ export class ThreejsGeoViewerComponent implements OnInit, OnChanges {
         const here3 = '/{z}/{x}/{y}/{width}/png8?apiKey=';
 
 
-        // this._viewColorLayers.push(new Cesium.ProviderViewModel({
+        // this.viewColorLayers.push(new Cesium.ProviderViewModel({
         //     name: 'Here map normal',
         //     iconUrl: Cesium.buildModuleUrl('Widgets/Images/TerrainProviders/CesiumWorldTerrain.png'),
         //     tooltip: 'Here',
@@ -349,7 +452,7 @@ export class ThreejsGeoViewerComponent implements OnInit, OnChanges {
         //     },
         // }));
 
-        // this._viewColorLayers.push(new Cesium.ProviderViewModel({
+        // this.viewColorLayers.push(new Cesium.ProviderViewModel({
         //     name: 'Here map normal grey',
         //     iconUrl: Cesium.buildModuleUrl('Widgets/Images/TerrainProviders/CesiumWorldTerrain.png'),
         //     tooltip: 'Here',
@@ -360,7 +463,7 @@ export class ThreejsGeoViewerComponent implements OnInit, OnChanges {
         //     },
         // }));
 
-        // this._viewColorLayers.push(new Cesium.ProviderViewModel({
+        // this.viewColorLayers.push(new Cesium.ProviderViewModel({
         //     name: 'Here map normal traffic',
         //     iconUrl: Cesium.buildModuleUrl('Widgets/Images/TerrainProviders/CesiumWorldTerrain.png'),
         //     tooltip: 'Here',
@@ -371,7 +474,7 @@ export class ThreejsGeoViewerComponent implements OnInit, OnChanges {
         //     },
         // }));
 
-        // this._viewColorLayers.push(new Cesium.ProviderViewModel({
+        // this.viewColorLayers.push(new Cesium.ProviderViewModel({
         //     name: 'Here map normal reduced',
         //     iconUrl: Cesium.buildModuleUrl('Widgets/Images/TerrainProviders/CesiumWorldTerrain.png'),
         //     tooltip: 'Here',
@@ -382,7 +485,7 @@ export class ThreejsGeoViewerComponent implements OnInit, OnChanges {
         //     },
         // }));
 
-        // this._viewColorLayers.push(new Cesium.ProviderViewModel({
+        // this.viewColorLayers.push(new Cesium.ProviderViewModel({
         //     name: 'Here map normal pedestrian',
         //     iconUrl: Cesium.buildModuleUrl('Widgets/Images/TerrainProviders/CesiumWorldTerrain.png'),
         //     tooltip: 'Here',
@@ -393,7 +496,7 @@ export class ThreejsGeoViewerComponent implements OnInit, OnChanges {
         //     },
         // }));
 
-        // this._viewColorLayers.push(new Cesium.ProviderViewModel({
+        // this.viewColorLayers.push(new Cesium.ProviderViewModel({
         //     name: 'Here map aerial terrain',
         //     iconUrl: Cesium.buildModuleUrl('Widgets/Images/TerrainProviders/CesiumWorldTerrain.png'),
         //     tooltip: 'Here',
@@ -404,7 +507,7 @@ export class ThreejsGeoViewerComponent implements OnInit, OnChanges {
         //     },
         // }));
 
-        // this._viewColorLayers.push(new Cesium.ProviderViewModel({
+        // this.viewColorLayers.push(new Cesium.ProviderViewModel({
         //     name: 'Here map aerial satellite',
         //     iconUrl: Cesium.buildModuleUrl('Widgets/Images/TerrainProviders/CesiumWorldTerrain.png'),
         //     tooltip: 'Here',
@@ -415,7 +518,7 @@ export class ThreejsGeoViewerComponent implements OnInit, OnChanges {
         //     },
         // }));
 
-        // this._viewColorLayers.push(new Cesium.ProviderViewModel({
+        // this.viewColorLayers.push(new Cesium.ProviderViewModel({
         //     name: 'Here map aerial hybrid',
         //     iconUrl: Cesium.buildModuleUrl('Widgets/Images/TerrainProviders/CesiumWorldTerrain.png'),
         //     tooltip: 'Here',
@@ -426,17 +529,17 @@ export class ThreejsGeoViewerComponent implements OnInit, OnChanges {
         //     },
         // }));
     }
-    getTerrains() {
-        this._viewElevationLayers = [];
-        this._____y = 1;
-        this._viewElevationLayers.push(null);
-        this._viewElevationLayers.push(new itowns.ElevationLayer('Ortho', {
-            source: new itowns.TMSSource({
-                name: 'Google map terrain only',
+
+    private _getTerrains() {
+        this.viewElevationLayers = [];
+        this.viewElevationLayers.push(null);
+        this.viewElevationLayers.push(new itowns.ElevationLayer('elevation', {
+            source: new itowns.WMTSSource({
                 projection: 'EPSG:3857',
-                format: 'image/jpg',
-                url: 'https://mt1.google.com/vt/lyrs=t&x=${x}&y=${y}&z=${z}',
-                tileMatrixSet: 'TMS:4326',
+                url: 'http://wxs.ign.fr/3ht7xcw6f7nciopo16etuqp2/geoportail/wmts',
+                name: 'ELEVATION.ELEVATIONGRIDCOVERAGE',
+                tileMatrixSet: 'WGS84G',
+                format: 'image/x-bil;bits=32'
             })
         }));
     }
