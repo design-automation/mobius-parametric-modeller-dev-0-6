@@ -1630,7 +1630,7 @@ function _cutCreateEnts(__model__: GIModel, ent_type: EEntType, ent_i: number, p
         return [[], []];
     }
     // update the lists, to deal with the end cases
-    if (is_closed) {
+    if (ent_type === EEntType.PGON) {
         // add the last list of posis to the the first list of posis
         for (const slice_posi_i of slice_posis_i[index][slice_posis_i[index].length - 1]) {
             slice_posis_i[index][0].push(slice_posi_i);
