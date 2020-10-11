@@ -43,7 +43,7 @@ export const Viewers: IView[] = [
     // The order of these views here will influence the order of the view appearing in the viewer header.
     { name: '3D Viewer', icon: undefined, component: GIViewerComponent },
     { name: 'Geo Viewer', icon: undefined, component: GICesiumViewerComponent },
-    { name: 'Three Geo Viewer', icon: undefined, component: GIGeoViewerComponent },
+    // { name: 'Three Geo Viewer', icon: undefined, component: GIGeoViewerComponent },
     // { name: 'Cytoscape Viewer', icon: undefined, component: CytoscapeViewerComponent },
     { name: 'Console', icon: undefined, component: ConsoleViewerComponent },
     { name: 'Help', icon: undefined, component: HelpViewerComponent }
