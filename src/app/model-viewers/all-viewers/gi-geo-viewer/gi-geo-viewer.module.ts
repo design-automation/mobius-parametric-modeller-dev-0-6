@@ -12,13 +12,10 @@ import { ColorPickerModule } from 'ngx-color-picker';
 
 // import app components
 import { GIGeoViewerComponent } from './gi-geo-viewer.component';
-import { ThreejsGeoViewerComponent } from './threejs/threejs-geo-viewer.component';
 
-// import { ModalService } from '../gi-viewer/html/modal-window.service';
-// import { ThreeJSViewerService } from '../gi-viewer/threejs/threejs-viewer.service';
-
-// import { ModalService } from './html/modal-window.service';
-// import { ThreeJSViewerService } from './threejs/threejs-viewer.service';
+import { ModalService } from './html/modal-window.service';
+import { DataGeoService } from './data/data.geo.service';
+import { ThreeGeoComponent } from './threejs/three-geo-viewer.component';
 
 /**
  * GIViewer
@@ -27,7 +24,7 @@ import { ThreejsGeoViewerComponent } from './threejs/threejs-geo-viewer.componen
 @NgModule({
     declarations: [
         GIGeoViewerComponent,
-        ThreejsGeoViewerComponent
+        ThreeGeoComponent
     ],
     exports: [
         GIGeoViewerComponent
@@ -44,8 +41,8 @@ import { ThreejsGeoViewerComponent } from './threejs/threejs-geo-viewer.componen
         ColorPickerModule
     ],
     providers: [
-        // ModalService,
-        // ThreeJSViewerService
+        ModalService,
+        DataGeoService
     ]
 })
 export class GIGeoViewerModule {
