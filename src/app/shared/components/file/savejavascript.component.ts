@@ -141,8 +141,8 @@ export class SaveJavascriptComponent {
             ` result.result is the model of the flowchart\n */\n\n` +
             argString.replace(/\\/g, '\\\\') +  '\n\n' +
             `async function ${funcName}(__modules__` + func.args.map(arg => ', ' + arg.name).join('') + `) {\n\n` +
-            `__debug__ = ${this.dataService.mobiusSettings.debug};\n` +
-            `__model__ = null;\n` +
+            `const __debug__ = ${this.dataService.mobiusSettings.debug};\n` +
+            `const __model__ = null;\n` +
             '/** * **/' +
             _varString + `\n\n` +
             fnString +
