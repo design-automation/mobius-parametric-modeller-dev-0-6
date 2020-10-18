@@ -63,11 +63,6 @@ export class GIGeomQuery {
         //     return this._geom_maps.up_posis_verts.has(index);
         // }
         const geom_maps_key: string = EEntStrToGeomMaps[ent_type];
-
-        if (this._geom_maps[geom_maps_key] === undefined) {
-            console.log(">>>>", ent_type, index,  geom_maps_key)
-        }
-        
         return this._geom_maps[geom_maps_key].has(index);
     }
     /**
