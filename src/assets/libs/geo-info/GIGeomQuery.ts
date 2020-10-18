@@ -516,6 +516,12 @@ export class GIGeomQuery {
     public isCollDescendent(coll1_i: number, coll2_i: number): boolean {
         let parent_coll_i: number = this._geom_maps.up_colls_colls.get(coll1_i);
         while (parent_coll_i !== null) {
+            // START TEMPORARY FIX
+            if (parent_coll_i === undefined) {
+                console.log("=== ERROR PARENT OF COLLECTION IS UNDEFINED ===");
+                return false;
+            }
+            // END TEMPORARY FIX
             if (parent_coll_i === coll2_i) { return true; }
             parent_coll_i = this._geom_maps.up_colls_colls.get(parent_coll_i);
         }
