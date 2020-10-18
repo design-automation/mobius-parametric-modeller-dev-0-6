@@ -506,7 +506,7 @@ export class GIGeomQuery {
     public getCollDescendents(coll_i: number): number[] {
         const descendent_colls_i: number[] = [];
         this._geom_maps.up_colls_colls.forEach( (coll2_parent, coll2_i) => {
-            if (coll2_parent !== -1 && coll2_i !== coll_i) {
+            if (coll2_parent !== null && coll2_i !== coll_i) {
                 if (this.isCollDescendent(coll2_i, coll_i)) {
                     descendent_colls_i.push(coll2_i);
                 }
