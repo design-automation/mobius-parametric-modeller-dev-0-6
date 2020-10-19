@@ -219,7 +219,11 @@ export class ExecuteComponent {
     private isDev = true;
     private triggerCheck: boolean;
     private terminated: string;
-    private errorMsg: string;
+    private prodErrorList: {
+        invalid: string[];
+        empty: string[];
+        other: string[];
+    };
 
     constructor(private dataService: DataService,
                 private dataOutputService: DataOutputService,
@@ -247,6 +251,11 @@ export class ExecuteComponent {
         this.triggerCheck = false;
         this.terminated = null;
         this.dataService.timelineDefault = true;
+        this.prodErrorList = {
+            'invalid': [],
+            'empty': [],
+            'other': []
+        };
 
         if (this.dataService.consoleClear) {
             this.dataService.clearLog();
@@ -310,19 +319,30 @@ export class ExecuteComponent {
             }
         }
         if (errorMsg) {
-            document.getElementById('spinner-off').click();
-            document.getElementById('Console').click();
-            this.dataService.flagModifiedNode(this.dataService.flowchart.nodes[0].id);
-            this.dataService.log(`<h4 style="padding: 2px 0px 2px 0px; color:red;">Error: ${errorMsg}</h4>`);
-            this.dataService.notifyMessage(`Error: ${errorMsg}`);
-            throw(new Error(errorMsg));
+            let errorList;
+            if (errorMsg.startsWith('Invalid')) {
+                errorList = this.prodErrorList.invalid;
+            } else if (errorMsg.startsWith('Empty')) {
+                errorList = this.prodErrorList.empty;
+            } else {
+                errorList = this.prodErrorList.other;
+            }
+            if (errorList.indexOf(errorMsg) === -1) {
+                errorList.push(errorMsg);
+            }
+            // document.getElementById('spinner-off').click();
+            // document.getElementById('Console').click();
+            // this.dataService.flagModifiedNode(this.dataService.flowchart.nodes[0].id);
+            // this.dataService.log(`<h4 style="padding: 2px 0px 2px 0px; color:red;">Error: ${errorMsg}</h4>`);
+            // this.dataService.notifyMessage(`Error: ${errorMsg}`);
+            // throw(new Error(errorMsg));
         }
     }
 
     checkNodeSyntax(node: INode, prodList: IProcedure[], prod: IProcedure, prodIndex: number) {
         if (prod.type === ProcedureTypes.Else || prod.type === ProcedureTypes.Elseif) {
             if (prodIndex === 0 || prodList[prodIndex - 1].type !== ProcedureTypes.Elseif && prodList[prodIndex - 1].type !== ProcedureTypes.If) {
-                this.processProdError(node, prod, `Missing If statement in node "${node.name}"`);
+                this.processProdError(node, prod, `Missing If statement in "${node.name}"`);
             }
             return true;
         } else if (prod.type === ProcedureTypes.Break || prod.type === ProcedureTypes.Continue) {
@@ -333,7 +353,7 @@ export class ExecuteComponent {
                 }
                 currentProd = currentProd.parent;
             }
-            this.processProdError(node, prod, `Break/Continue statement must be inside a For/While loop in node "${node.name}"`);
+            this.processProdError(node, prod, `Break/Continue statement must be inside a For/While loop in "${node.name}"`);
         }
         return true;
     }
@@ -359,7 +379,7 @@ export class ExecuteComponent {
                 }
             }
             if (hasArgError) {
-                this.processProdError(null, null, `Invalid Arguments`);
+                this.processProdError(null, null, `Invalid Argument(s) in "${node.name}"`);
             }
 
             // for start node constant procedures (start node parameters)
@@ -377,7 +397,7 @@ export class ExecuteComponent {
                 }
             }
             if (hasArgError) {
-                this.processProdError(null, null, `Empty Arguments`);
+                this.processProdError(null, null, `Empty Argument(s) in "${node.name}"`);
             }
 
             if (prod.children) {
@@ -595,16 +615,20 @@ export class ExecuteComponent {
         };
 
         if (node.hasError) {
-            this.processProdError(null, null, 'Error: Invalid Argument detected. Check marked node(s) and procedure(s)!');
-            // document.getElementById('Console').click();
-            // this.dataService.log('<h4 style="padding: 2px 0px 2px 0px; style="color:red">Error: Invalid Argument ' +
-            //                         'detected. Check marked node(s) and procedure(s)!</h5>');
-            // document.getElementById('spinner-off').click();
-            // this.dataService.flagModifiedNode(this.dataService.flowchart.nodes[0].id);
+            const invalidErr = this.prodErrorList.invalid.join('\n');
+            const emptyErr = this.prodErrorList.empty.join('\n');
+            const otherErr = this.prodErrorList.other.join('\n');
+            const Err = (invalidErr + '\n' + emptyErr + '\n' + otherErr).replace(/^\s+|\s+$/g, '');
+            // this.processProdError(null, null, 'Error: Invalid Argument detected. Check marked node(s) and procedure(s)!');
+            document.getElementById('Console').click();
+            this.dataService.log('<h4 style="padding: 2px 0px 2px 0px; color:red">Error:</h4><h4 style="padding: 2px 0px 2px 20px; color:red">' +
+                                 Err.replace(/\n/g, '</h4><h4 style="padding: 2px 0px 2px 20px; color:red">') + '</h4>');
+            document.getElementById('spinner-off').click();
+            this.dataService.flagModifiedNode(this.dataService.flowchart.nodes[0].id);
             // const _category = this.isDev ? 'dev' : 'execute';
             // this.googleAnalyticsService.trackEvent(_category, `error: Reserved Word Argument`,
             //     'click', performance.now() - this.startTime);
-            // throw new Error('Reserved Word Argument');
+            throw new Error('\n' + Err);
         }
 
         let fnString = '';
