@@ -2,12 +2,12 @@ import { Component, Input, OnInit, OnDestroy, ElementRef, Output, EventEmitter }
 import { ModalService } from './modal-window.service';
 
 @Component({
-    selector: 'geo-modal-window',
+    selector: 'modal-window',
     styleUrls: ['./modal-window.component.scss'],
     templateUrl: './modal-window.component.html'
 })
 
-export class GeoModalWindowComponent implements OnInit, OnDestroy {
+export class ModalWindowComponent implements OnInit, OnDestroy {
     @Input() id: string;
     @Output() closeModal = new EventEmitter<void>();
     private element: any;
@@ -64,7 +64,6 @@ export class GeoModalWindowComponent implements OnInit, OnDestroy {
     // open modal
     open(): void {
         let modalWindow = document.getElementById('geo-modal-window');
-        // modalWindow.style.left = 0;
         modalWindow.classList.add('open');
         this.element.style.display = 'block';
         document.body.classList.add('modal-open');

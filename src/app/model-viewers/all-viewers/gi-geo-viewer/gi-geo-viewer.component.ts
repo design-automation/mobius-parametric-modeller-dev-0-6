@@ -36,6 +36,7 @@ export class GIGeoViewerComponent {
      * @param dataService
      */
     constructor(private dataService: DataGeoService, private modalService: ModalService, private threeJSDataService: ThreeJSDataService) {
+        this.settings = JSON.parse(JSON.stringify(geo_default_settings));
     }
 
     zoomfit() {
@@ -86,7 +87,7 @@ export class GIGeoViewerComponent {
      * @param id
      */
     public openModal(id: string) {
-        if (localStorage.getItem('cesium_settings') !== null) {
+        if (localStorage.getItem('geo_settings') !== null) {
             // this.settings = JSON.parse(localStorage.getItem('mpm_settings'));
         }
         if (document.body.className === 'modal-open') {
@@ -94,8 +95,9 @@ export class GIGeoViewerComponent {
         } else {
             this.backup_settings = <GeoSettings> JSON.parse(JSON.stringify(this.settings));
             const scene = this.dataService.getGeoScene();
-            this.colorLayerList = scene.viewColorLayers.map(provider => provider.name);
-            this.elevLayerList = scene.viewElevationLayers.map(provider => provider.name);
+            console.log(scene.viewColorLayers)
+            this.colorLayerList = scene.viewColorLayers.map(layer => layer.source.attribution.name);
+            // this.elevLayerList = scene.viewElevationLayers.map(provider => provider.name);
             this.modalService.open(id);
         }
     }

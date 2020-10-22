@@ -16,7 +16,10 @@ import { GIGeoViewerComponent } from './gi-geo-viewer.component';
 import { ModalService } from './html/modal-window.service';
 import { DataGeoService } from './data/data.geo.service';
 import { ThreeGeoComponent } from './threejs/three-geo-viewer.component';
-import { GeoModalWindowComponent } from './html/modal-window.component';
+import { ModalWindowComponent } from './html/modal-window.component';
+import { DropdownMenuComponent } from './html/dropdown-menu.component';
+import { TabsComponent } from './html/tabs.component';
+import { TabComponent } from './html/tab.component';
 
 /**
  * GIViewer
@@ -26,7 +29,10 @@ import { GeoModalWindowComponent } from './html/modal-window.component';
     declarations: [
         GIGeoViewerComponent,
         ThreeGeoComponent,
-        GeoModalWindowComponent
+        TabComponent,
+        TabsComponent,
+        DropdownMenuComponent,
+        ModalWindowComponent
     ],
     exports: [
         GIGeoViewerComponent

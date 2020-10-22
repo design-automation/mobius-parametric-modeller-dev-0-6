@@ -6,13 +6,14 @@ import { GIMetaData } from '@assets/libs/geo-info/GIMetaData';
 
 @Injectable()
 export class DataOutputService {
-    private emptyModel = _parameterTypes.newFn();
+    private emptyModel;
     private iModel = {'nodeID': '', 'getOutput': null, 'model': null};
 
     getViewerData(node: INode, meta: GIMetaData, getViewOutput: boolean) {
         const webWorker = new WebWorkerService();
         if (!node || !node.enabled || !node.model) {
-            return null; }
+            if (!this.emptyModel) { this.emptyModel = _parameterTypes.newFn(); }
+            return this.emptyModel; }
         if (this.iModel.nodeID === node.id && this.iModel.getOutput === getViewOutput) {
             return this.iModel.model;
         }

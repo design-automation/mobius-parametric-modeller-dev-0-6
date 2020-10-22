@@ -94,36 +94,20 @@ export class DataGeo {
         this.view.controls.states.PAN = {mouseButton: 0, keyboard: 17, enable: true, finger: 1};
         this.view.controls.states.MOVE_GLOBE = {mouseButton: 2, bottom: 40, left: 37, right: 39, up: 38, enable: true};
 
+        let layerIndex = 0;
+        if ( this.settings && this.settings.imagery && this.settings.imagery.layer ) {
+            for (let i = 0; i < this.viewColorLayers.length; i++) {
+                if (this.viewColorLayers[i].source.attribution.name === this.settings.imagery.layer) {
+                    layerIndex = i;
+                    break;
+                }
+            }
+        }
+        this.view.addLayer(this.viewColorLayers[layerIndex]);
 
-        // const orthoSource = new itowns.TMSSource({
-        //     projection: 'EPSG:3857',
-        //     isInverted: true,
-        //     format: 'image/png',
-        //     url: 'http://osm.oslandia.io/styles/klokantech-basic/${z}/${x}/${y}.png',
-        //     attribution: {
-        //         name: 'OpenStreetMap',
-        //         url: 'http://www.openstreetmap.org/'
-        //     },
-        //     tileMatrixSet: 'PM'
-        // });
+        const attribution_div = document.getElementById('geo-attribution');
+        attribution_div.innerHTML = this.viewColorLayers[layerIndex].source.attribution.html;
 
-        // const orthoSource = new itowns.WMTSSource({
-        //     projection: 'EPSG:3857',
-        //     format: 'image/jpg',
-        //     url: 'https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/',
-        //     tileMatrixSet: 'PM',
-        //     name: 'ArcGis'
-        // });
-
-        // const orthoSource = new itowns.TMSSource({
-        //     name: 'Google map roadmap',
-        //     projection: 'EPSG:3857',
-        //     format: 'image/jpg',
-        //     url: 'https://mt1.google.com/vt/lyrs=m&x=${x}&y=${y}&z=${z}',
-        //     tileMatrixSet: 'PM',
-        // });
-
-        this.view.addLayer(this.viewColorLayers[this._____x]);
         if (this.viewElevationLayers[this._____y]) {
             this.view.addLayer(this.viewElevationLayers[this._____y]);
         }
@@ -162,67 +146,71 @@ export class DataGeo {
         if (!newSetting) { return; }
         if (newSetting.imagery) {
             if (newSetting.imagery.layer && this.settings.imagery.layer !== newSetting.imagery.layer) {
-                for (const layerProvider of this.viewColorLayers) {
-                    if (layerProvider.name === newSetting.imagery.layer) {
-                        const viewer_layers = this.viewer.imageryLayers;
-                        const newLayer = new Cesium.ImageryLayer(layerProvider.creationCommand(
-                            this.settings.imagery.apiKey[API_MAPS_KEY_MAPPING[this.settings.imagery.layer]]));
-                        viewer_layers.removeAll();
-                        viewer_layers.add(newLayer);
+                for (const colorLayer of this.viewColorLayers) {
+                    if (colorLayer.source.attribution.name === newSetting.imagery.layer) {
+                        this.view.removeLayer('ColorLayer');
+                        this.view.addLayer(colorLayer);
+                        const attribution_div = document.getElementById('geo-attribution');
+                        attribution_div.innerHTML = colorLayer.source.attribution.html;
+                        // const viewer_layers = this.viewer.imageryLayers;
+                        // const newLayer = new Cesium.ImageryLayer(layerProvider.creationCommand(
+                        //     this.settings.imagery.apiKey[API_MAPS_KEY_MAPPING[this.settings.imagery.layer]]));
+                        // viewer_layers.removeAll();
+                        // viewer_layers.add(newLayer);
                         this.settings.imagery.layer = newSetting.imagery.layer;
                     }
                 }
             }
-            if (newSetting.imagery.apiKey) {
-                if (!this.settings.imagery.apiKey) {
-                    this.settings.imagery.apiKey = {};
-                }
-                for (const i of Object.keys(newSetting.imagery.apiKey)) {
-                    this.settings.imagery.apiKey[i] = newSetting.imagery.apiKey[i];
-                }
-            }
-            if (newSetting.imagery.terrain && this.settings.imagery.terrain !== newSetting.imagery.terrain) {
-                for (const terrainProvider of this.viewElevationLayers) {
-                    if (terrainProvider.name === newSetting.imagery.terrain) {
-                        this.viewer.terrainProvider = terrainProvider.creationCommand();
-                        this.settings.imagery.terrain = newSetting.imagery.terrain;
-                    }
-                }
-            }
+            // if (newSetting.imagery.apiKey) {
+            //     if (!this.settings.imagery.apiKey) {
+            //         this.settings.imagery.apiKey = {};
+            //     }
+            //     for (const i of Object.keys(newSetting.imagery.apiKey)) {
+            //         this.settings.imagery.apiKey[i] = newSetting.imagery.apiKey[i];
+            //     }
+            // }
+            // if (newSetting.imagery.terrain && this.settings.imagery.terrain !== newSetting.imagery.terrain) {
+            //     for (const terrainProvider of this.viewElevationLayers) {
+            //         if (terrainProvider.name === newSetting.imagery.terrain) {
+            //             this.viewer.terrainProvider = terrainProvider.creationCommand();
+            //             this.settings.imagery.terrain = newSetting.imagery.terrain;
+            //         }
+            //     }
+            // }
         }
-        if (newSetting.camera) {
-            if (newSetting.camera.pos) {
-                this.settings.camera.pos.x = newSetting.camera.pos.x;
-                this.settings.camera.pos.y = newSetting.camera.pos.y;
-                this.settings.camera.pos.z = newSetting.camera.pos.z;
-                this.settings.camera.direction.x = newSetting.camera.direction.x;
-                this.settings.camera.direction.y = newSetting.camera.direction.y;
-                this.settings.camera.direction.z = newSetting.camera.direction.z;
-                this.settings.camera.up.x = newSetting.camera.up.x;
-                this.settings.camera.up.y = newSetting.camera.up.y;
-                this.settings.camera.up.z = newSetting.camera.up.z;
-                this.settings.camera.right.x = newSetting.camera.right.x;
-                this.settings.camera.right.y = newSetting.camera.right.y;
-                this.settings.camera.right.z = newSetting.camera.right.z;
-            }
-        }
-        if (newSetting.time) {
-            if (newSetting.time.date) {
-                this.settings.time.date = newSetting.time.date;
-                if (this.settings.time.date.indexOf('T') === -1) {
-                    Cesium.JulianDate.fromIso8601(this.settings.time.date, this.viewer.clock.currentTime);
-                    Cesium.JulianDate.addDays(this.viewer.clock.currentTime, -1, this.viewer.clock.startTime);
-                    Cesium.JulianDate.addDays(this.viewer.clock.currentTime, 1, this.viewer.clock.stopTime);
-                    this.viewer.timeline.zoomTo(this.viewer.clock.startTime, this.viewer.clock.stopTime);
-                } else {
-                    Cesium.JulianDate.fromIso8601(this.settings.time.date.split('T')[0], this.viewer.clock.currentTime);
-                    Cesium.JulianDate.addDays(this.viewer.clock.currentTime, -1, this.viewer.clock.startTime);
-                    Cesium.JulianDate.addDays(this.viewer.clock.currentTime, 1, this.viewer.clock.stopTime);
-                    Cesium.JulianDate.fromIso8601(this.settings.time.date + ':00Z', this.viewer.clock.currentTime);
-                    this.viewer.timeline.zoomTo(this.viewer.clock.startTime, this.viewer.clock.stopTime);
-                }
-            }
-        }
+        // if (newSetting.camera) {
+        //     if (newSetting.camera.pos) {
+        //         this.settings.camera.pos.x = newSetting.camera.pos.x;
+        //         this.settings.camera.pos.y = newSetting.camera.pos.y;
+        //         this.settings.camera.pos.z = newSetting.camera.pos.z;
+        //         this.settings.camera.direction.x = newSetting.camera.direction.x;
+        //         this.settings.camera.direction.y = newSetting.camera.direction.y;
+        //         this.settings.camera.direction.z = newSetting.camera.direction.z;
+        //         this.settings.camera.up.x = newSetting.camera.up.x;
+        //         this.settings.camera.up.y = newSetting.camera.up.y;
+        //         this.settings.camera.up.z = newSetting.camera.up.z;
+        //         this.settings.camera.right.x = newSetting.camera.right.x;
+        //         this.settings.camera.right.y = newSetting.camera.right.y;
+        //         this.settings.camera.right.z = newSetting.camera.right.z;
+        //     }
+        // }
+        // if (newSetting.time) {
+        //     if (newSetting.time.date) {
+        //         this.settings.time.date = newSetting.time.date;
+        //         if (this.settings.time.date.indexOf('T') === -1) {
+        //             Cesium.JulianDate.fromIso8601(this.settings.time.date, this.viewer.clock.currentTime);
+        //             Cesium.JulianDate.addDays(this.viewer.clock.currentTime, -1, this.viewer.clock.startTime);
+        //             Cesium.JulianDate.addDays(this.viewer.clock.currentTime, 1, this.viewer.clock.stopTime);
+        //             this.viewer.timeline.zoomTo(this.viewer.clock.startTime, this.viewer.clock.stopTime);
+        //         } else {
+        //             Cesium.JulianDate.fromIso8601(this.settings.time.date.split('T')[0], this.viewer.clock.currentTime);
+        //             Cesium.JulianDate.addDays(this.viewer.clock.currentTime, -1, this.viewer.clock.startTime);
+        //             Cesium.JulianDate.addDays(this.viewer.clock.currentTime, 1, this.viewer.clock.stopTime);
+        //             Cesium.JulianDate.fromIso8601(this.settings.time.date + ':00Z', this.viewer.clock.currentTime);
+        //             this.viewer.timeline.zoomTo(this.viewer.clock.startTime, this.viewer.clock.stopTime);
+        //         }
+        //     }
+        // }
         // if (newSetting.model) {
         //     if (newSetting.model.polygonEdge !== this.settings.model.polygonEdge) {
         //         this.settings.model.polygonEdge = newSetting.model.polygonEdge;
@@ -321,16 +309,15 @@ export class DataGeo {
         //         });
         //     },
         // }));
-        this.viewColorLayers.push(new itowns.ColorLayer('Ortho', {
+        this.viewColorLayers.push(new itowns.ColorLayer('ColorLayer', {
             source: new itowns.TMSSource({
                 name: 'OpenStreetMap',
                 projection: 'EPSG:3857',
                 format: 'image/png',
                 url: 'https://a.tile.openstreetmap.org/${z}/${x}/${y}.png',
                 attribution: {
-                    name: 'OpenStreetMap',
-                    url: 'http://www.openstreetmap.org/',
-                    html: ''
+                    name: 'Open Street Map',
+                    html: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                 },
                 tileMatrixSet: 'PM',
                 zoom: {
@@ -339,12 +326,17 @@ export class DataGeo {
                 }
             })
         }));
-        this.viewColorLayers.push(new itowns.ColorLayer('Ortho', {
+
+        this.viewColorLayers.push(new itowns.ColorLayer('ColorLayer', {
             source: new itowns.TMSSource({
                 name: 'OpenTopoMap',
                 projection: 'EPSG:3857',
                 format: 'image/png',
                 url: 'https://a.tile.opentopomap.org/${z}/${x}/${y}.png',
+                attribution: {
+                    name: 'Open Topo Map',
+                    html: 'Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, <a href="http://viewfinderpanoramas.org">SRTM</a> | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)'
+                },
                 tileMatrixSet: 'PM',
                 zoom: {
                     min: 0,
@@ -353,34 +345,29 @@ export class DataGeo {
             })
         }));
 
-        this.viewColorLayers.push(new itowns.ColorLayer('Ortho', {
+        this.viewColorLayers.push(new itowns.ColorLayer('ColorLayer', {
             source: new itowns.TMSSource({
                 name: 'Stamen Toner',
                 projection: 'EPSG:3857',
                 format: 'image/png',
                 url: 'https://stamen-tiles.a.ssl.fastly.net/toner/${z}/${x}/${y}.png',
+                attribution: {
+                    name: 'Stamen Toner',
+                    html: 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a> &mdash; Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+                },
                 tileMatrixSet: 'PM'
             })
         }));
-        this.viewColorLayers.push(new itowns.ColorLayer('Ortho', {
+        this.viewColorLayers.push(new itowns.ColorLayer('ColorLayer', {
             source: new itowns.TMSSource({
-                name: 'Stamen terrain',
+                name: 'Stamen Terrain',
                 projection: 'EPSG:3857',
                 format: 'image/png',
                 url: 'https://stamen-tiles.a.ssl.fastly.net/terrain/${z}/${x}/${y}.png',
-                tileMatrixSet: 'PM',
-                zoom: {
-                    min: 2,
-                    max: 17
-                }
-            })
-        }));
-        this.viewColorLayers.push(new itowns.ColorLayer('Ortho', {
-            source: new itowns.TMSSource({
-                name: 'Stamen watercolor',
-                projection: 'EPSG:3857',
-                format: 'image/png',
-                url: 'https://stamen-tiles.a.ssl.fastly.net/watercolor/${z}/${x}/${y}.png',
+                attribution: {
+                    name: 'Stamen Terrain',
+                    html: 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a> &mdash; Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+                },
                 tileMatrixSet: 'PM',
                 zoom: {
                     min: 0,
@@ -388,50 +375,87 @@ export class DataGeo {
                 }
             })
         }));
-
-        this.viewColorLayers.push(new itowns.ColorLayer('Ortho', {
+        this.viewColorLayers.push(new itowns.ColorLayer('ColorLayer', {
             source: new itowns.TMSSource({
-                name: 'Google map roadmap',
+                name: 'Stamen Watercolor',
                 projection: 'EPSG:3857',
-                format: 'image/jpg',
-                url: 'https://mt1.google.com/vt/lyrs=m&x=${x}&y=${y}&z=${z}',
+                format: 'image/png',
+                url: 'https://stamen-tiles.a.ssl.fastly.net/watercolor/${z}/${x}/${y}.png',
+                attribution: {
+                    name: 'Stamen Watercolor',
+                    html: 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a> &mdash; Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+                },
                 tileMatrixSet: 'PM',
+                zoom: {
+                    min: 1,
+                    max: 16
+                }
             })
         }));
-        this.viewColorLayers.push(new itowns.ColorLayer('Ortho', {
-            source: new itowns.TMSSource({
-                name: 'Google map altered roadmap',
-                projection: 'EPSG:3857',
-                format: 'image/jpg',
-                url: 'https://mt1.google.com/vt/lyrs=r&x=${x}&y=${y}&z=${z}',
-                tileMatrixSet: 'PM',
-            })
-        }));
-        this.viewColorLayers.push(new itowns.ColorLayer('Ortho', {
-            source: new itowns.TMSSource({
-                name: 'Google map satellite only',
-                projection: 'EPSG:3857',
-                format: 'image/jpg',
-                url: 'https://mt1.google.com/vt/lyrs=s&x=${x}&y=${y}&z=${z}',
-                tileMatrixSet: 'PM',
-            })
-        }));
-        this.viewColorLayers.push(new itowns.ColorLayer('Ortho', {
-            source: new itowns.TMSSource({
-                name: 'Google map hybrid',
-                projection: 'EPSG:3857',
-                format: 'image/jpg',
-                url: 'https://mt1.google.com/vt/lyrs=y&x=${x}&y=${y}&z=${z}',
-                tileMatrixSet: 'PM',
-            })
-        }));
-        this.viewColorLayers.push(new itowns.ColorLayer('Ortho', {
+        this.viewColorLayers.push(new itowns.ColorLayer('ColorLayer', {
             source: new itowns.WMTSSource({
                 name: 'ArcGIS Terrain',
                 projection: 'EPSG:3857',
                 format: 'image/jpg',
                 url: 'https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/',
+                attribution: {
+                    name: 'ArcGIS Terrain',
+                    html: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
+                },
                 tileMatrixSet: 'PM'
+            })
+        }));
+
+        this.viewColorLayers.push(new itowns.ColorLayer('ColorLayer', {
+            source: new itowns.TMSSource({
+                name: 'Google Map - Roadmap',
+                projection: 'EPSG:3857',
+                format: 'image/jpg',
+                url: 'https://mt1.google.com/vt/lyrs=m&x=${x}&y=${y}&z=${z}',
+                attribution: {
+                    name: 'Google Map - Roadmap',
+                    html: 'Map data ©2019 <a href="https://www.google.com/">Google</a>',
+                },
+                tileMatrixSet: 'PM',
+            })
+        }));
+        this.viewColorLayers.push(new itowns.ColorLayer('ColorLayer', {
+            source: new itowns.TMSSource({
+                name: 'Google Map - Altered Roadmap',
+                projection: 'EPSG:3857',
+                format: 'image/jpg',
+                url: 'https://mt1.google.com/vt/lyrs=r&x=${x}&y=${y}&z=${z}',
+                attribution: {
+                    name: 'Google Map - Altered Roadmap',
+                    html: 'Map data ©2019 <a href="https://www.google.com/">Google</a>',
+                },
+                tileMatrixSet: 'PM',
+            })
+        }));
+        this.viewColorLayers.push(new itowns.ColorLayer('ColorLayer', {
+            source: new itowns.TMSSource({
+                name: 'Google Map - Satellite Only',
+                projection: 'EPSG:3857',
+                format: 'image/jpg',
+                url: 'https://mt1.google.com/vt/lyrs=s&x=${x}&y=${y}&z=${z}',
+                attribution: {
+                    name: 'Google Map - Satellite Only',
+                    html: 'Map data ©2019 <a href="https://www.google.com/">Google</a>',
+                },
+                tileMatrixSet: 'PM',
+            })
+        }));
+        this.viewColorLayers.push(new itowns.ColorLayer('ColorLayer', {
+            source: new itowns.TMSSource({
+                name: 'Google Map - Hybrid',
+                projection: 'EPSG:3857',
+                format: 'image/jpg',
+                url: 'https://mt1.google.com/vt/lyrs=y&x=${x}&y=${y}&z=${z}',
+                attribution: {
+                    name: 'Google Map - Hybrid',
+                    html: 'Map data ©2019 <a href="https://www.google.com/">Google</a>',
+                },
+                tileMatrixSet: 'PM',
             })
         }));
 
