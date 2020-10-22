@@ -219,114 +219,17 @@ export class ExecuteComponent {
     private isDev = true;
     private triggerCheck: boolean;
     private terminated: string;
+    private prodErrorList: {
+        invalid: string[];
+        empty: string[];
+        other: string[];
+    };
 
     constructor(private dataService: DataService,
                 private dataOutputService: DataOutputService,
                 private router: Router,
                 private googleAnalyticsService: GoogleAnalyticsService) {
         this.isDev = isDevMode();
-    }
-
-    static async resolveImportedUrl(prodList: IProcedure[]|INode, isMainFlowchart?: boolean, isStartNode = false) {
-        return;
-        // if (!isArray(prodList)) {
-        //     await ExecuteComponent.resolveImportedUrl(prodList.procedure, isMainFlowchart, isStartNode);
-        //     if (prodList.localFunc) {
-        //         await ExecuteComponent.resolveImportedUrl(prodList.localFunc, isMainFlowchart, isStartNode);
-        //     }
-        //     return;
-        // }
-        // for (const prod of <IProcedure[]> prodList) {
-        //     if (prod.children) {await  ExecuteComponent.resolveImportedUrl(prod.children, isMainFlowchart, isStartNode); }
-        //     if (!prod.enabled) {
-        //         continue;
-        //     }
-        //     if (isMainFlowchart && prod.type === ProcedureTypes.globalFuncCall) {
-        //         for (let i = 1; i < prod.args.length; i++) {
-        //             const arg = prod.args[i];
-        //             // args.slice(1).map((arg) => {
-        //             if (arg.type.toString() !== InputType.URL.toString()) { continue; }
-        //             prod.resolvedValue = await CodeUtils.getStartInput(arg, InputType.URL);
-        //         }
-        //         continue;
-        //     }
-        //     if (prod.type !== ProcedureTypes.MainFunction || (isStartNode && !isMainFlowchart)) {continue; }
-        //     for (const func of _parameterTypes.urlFunctions) {
-        //         const funcMeta = func.split('.');
-        //         if (prod.meta.module === funcMeta[0] && prod.meta.name === funcMeta[1]) {
-        //             const arg = prod.args[2];
-        //             if (arg.name[0] === '_') { continue; }
-        //             if (arg.value.indexOf('__model_data__') !== -1) {
-        //                 arg.jsValue = arg.value;
-        //                 prod.resolvedValue = arg.value.split('__model_data__').join('');
-        //             } else if (arg.jsValue && arg.jsValue.indexOf('__model_data__') !== -1) {
-        //                 prod.resolvedValue = arg.jsValue.split('__model_data__').join('');
-        //             } else if (arg.value.indexOf('://') !== -1) {
-        //                 const val = <string>(arg.value).replace(/ /g, '');
-        //                 const result = await CodeUtils.getURLContent(val);
-        //                 if (result === undefined) {
-        //                     prod.resolvedValue = arg.value;
-        //                 } else if (result.indexOf && result.indexOf('HTTP Request Error') !== -1) {
-        //                     throw new Error(result);
-        //                 } else if (val.indexOf('.zip') !== -1) {
-        //                     prod.resolvedValue = await ExecuteComponent.openZipFile(result);
-        //                 } else {
-        //                     prod.resolvedValue = '`' + result + '`';
-        //                 }
-        //                 break;
-        //             } else if ((arg.value[0] !== '"' && arg.value[0] !== '\'')) {
-        //                 prod.resolvedValue = null;
-        //                 break;
-        //             } else {
-        //                 let val = arg.value.slice(1, -1).trim();
-        //                 if (val.length > 1 && val[0] === '{') {
-        //                     prod.resolvedValue = null;
-        //                     break;
-        //                 }
-        //                 val = val.replace(/\"|\'/g, '');
-        //                 const backup_list: string[] = JSON.parse(localStorage.getItem('mobius_backup_list'));
-        //                 if (val.indexOf('*') !== -1) {
-        //                     const splittedVal = val.split('*');
-        //                     const start = splittedVal[0] === '' ? null : splittedVal[0];
-        //                     const end = splittedVal[1] === '' ? null : splittedVal[1];
-        //                     let result = '{';
-        //                     for (const backup_name of backup_list) {
-        //                         let valid_check = true;
-        //                         if (start && !backup_name.startsWith(start)) {
-        //                             valid_check = false;
-        //                         }
-        //                         if (end && !backup_name.endsWith(end)) {
-        //                             valid_check = false;
-        //                         }
-        //                         if (valid_check) {
-        //                             const backup_file = await SaveFileComponent.loadFromFileSystem(backup_name);
-        //                             result += `"${backup_name}": \`${backup_file.replace(/\\/g, '\\\\')}\`,`;
-        //                         }
-        //                     }
-        //                     result += '}';
-        //                     prod.resolvedValue = result;
-        //                     break;
-        //                 } else {
-        //                     if (backup_list.indexOf(val) !== -1) {
-        //                         const result = await SaveFileComponent.loadFromFileSystem(val);
-        //                         if (!result || result === 'error') {
-        //                             prod.hasError = true;
-        //                             throw(new Error(`File named ${val} does not exist in the local storage`));
-        //                             // prod.resolvedValue = arg.value;
-        //                         } else {
-        //                             prod.resolvedValue = '`' + result + '`';
-        //                             break;
-        //                         }
-        //                     } else {
-        //                         prod.hasError = true;
-        //                         throw(new Error(`File named ${val} does not exist in the local storage`));
-        //                     }
-        //                 }
-        //             }
-        //             break;
-        //         }
-        //     }
-        // }
     }
 
     static async openZipFile(zipFile) {
@@ -348,6 +251,11 @@ export class ExecuteComponent {
         this.triggerCheck = false;
         this.terminated = null;
         this.dataService.timelineDefault = true;
+        this.prodErrorList = {
+            'invalid': [],
+            'empty': [],
+            'other': []
+        };
 
         if (this.dataService.consoleClear) {
             this.dataService.clearLog();
@@ -364,75 +272,20 @@ export class ExecuteComponent {
         // reset input of all nodes except start & resolve all async processes (file reading + get url content)
         for (const node of this.dataService.flowchart.nodes) {
             node.hasError = false;
-            let EmptyECheck = false;
-            let InvalidECheck = false;
 
             // reset node input value to undefined --> save memory
-            if (node.type !== 'start') {
-                if (node.input.edges) {
-                    node.input.value = undefined;
-                }
+            if (node.input.edges) {
+                node.input.value = undefined;
             }
 
             if (!node.enabled) {
                 continue;
             }
 
-            // resolve all urls (or local storage files) in the node, calling the url and retrieving the data
-            // the data is then saved as resolvedValue in its respective argument in the procedure (in JSON format)
-            // try {
-            //     await  ExecuteComponent.resolveImportedUrl(node, true, node.type === 'start');
-            // } catch (ex) {
-            //     node.hasError = true;
-            //     this.dataService.flagModifiedNode(this.dataService.flowchart.nodes[0].id);
-            //     document.getElementById('spinner-off').click();
-            //     document.getElementById('Console').click();
-            //     this.dataService.log(`<h4 style="padding: 2px 0px 2px 0px; color:red;">Error: ${ex.message}</h4>`);
-            //     const _category = this.isDev ? 'dev' : 'execute';
-            //     this.googleAnalyticsService.trackEvent(_category, `error: ${ex.name}`, 'click', performance.now() - this.startTime);
-            //     throw ex;
-            // }
-            let validCheck = await this.checkProdValidity(node, node.localFunc);
-            InvalidECheck = InvalidECheck || validCheck[0];
-            EmptyECheck = EmptyECheck || validCheck[1];
-            validCheck = await this.checkProdValidity(node, node.procedure);
-            InvalidECheck = InvalidECheck || validCheck[0];
-            EmptyECheck = EmptyECheck || validCheck[1];
+            this.checkProdValidity(node, node.localFunc);
+            this.checkProdValidity(node, node.procedure);
         }
-
-        // // resolve urls for each imported functions and subFunctions
-        // for (const func of this.dataService.flowchart.functions) {
-        //     for (const node of func.flowchart.nodes) {
-        //         try {
-        //             await  ExecuteComponent.resolveImportedUrl(node, false, node.type === 'start');
-        //         } catch (ex) {
-        //             document.getElementById('spinner-off').click();
-        //             document.getElementById('Console').click();
-        //             this.dataService.log(`<h4 style="padding: 2px 0px 2px 0px; color:red;">` +
-        //                                  `Error in global function ${func.name}: ${ex.message}</h4>`);
-        //             const _category = this.isDev ? 'dev' : 'execute';
-        //             this.googleAnalyticsService.trackEvent(_category, `error: ${ex.name}`, 'click', performance.now() - this.startTime);
-        //             throw ex;
-        //         }
-        //     }
-        // }
-        // if (this.dataService.flowchart.subFunctions) {
-        //     for (const func of this.dataService.flowchart.subFunctions) {
-        //         for (const node of func.flowchart.nodes) {
-        //             try {
-        //                 await  ExecuteComponent.resolveImportedUrl(node, false, node.type === 'start');
-        //             } catch (ex) {
-        //                 document.getElementById('spinner-off').click();
-        //                 document.getElementById('Console').click();
-        //                 this.dataService.log(`<h4 style="padding: 2px 0px 2px 0px; color:red;">` +
-        //                                      `Error in global function ${func.name.split('_')[0]}: ${ex.message}</h4>`);
-        //                 const _category = this.isDev ? 'dev' : 'execute';
-        //                 this.googleAnalyticsService.trackEvent(_category, `error: ${ex.name}`, 'click', performance.now() - this.startTime);
-        //                 throw ex;
-        //             }
-        //         }
-        //     }
-        // }
+        await this.checkStartNodeInput();
 
         // execute the flowchart
         try {
@@ -453,56 +306,84 @@ export class ExecuteComponent {
         }
     }
 
-    async checkProdValidity(node: INode, prodList: IProcedure[]) {
-        let InvalidECheck = false;
-        let EmptyECheck = false;
+    processProdError(node: INode, prod: IProcedure, errorMsg: string) {
+        if (node) { node.hasError = true; }
+        if (prod) {
+            prod.hasError = true;
+            let topmostProd = prod;
+            while (topmostProd.parent) {
+                topmostProd = topmostProd.parent;
+            }
+            if (topmostProd.type === ProcedureTypes.LocalFuncDef) {
+                topmostProd.hasError = true;
+            }
+        }
+        if (errorMsg) {
+            let errorList;
+            if (errorMsg.startsWith('Invalid')) {
+                errorList = this.prodErrorList.invalid;
+            } else if (errorMsg.startsWith('Empty')) {
+                errorList = this.prodErrorList.empty;
+            } else {
+                errorList = this.prodErrorList.other;
+            }
+            if (errorList.indexOf(errorMsg) === -1) {
+                errorList.push(errorMsg);
+            }
+            // document.getElementById('spinner-off').click();
+            // document.getElementById('Console').click();
+            // this.dataService.flagModifiedNode(this.dataService.flowchart.nodes[0].id);
+            // this.dataService.log(`<h4 style="padding: 2px 0px 2px 0px; color:red;">Error: ${errorMsg}</h4>`);
+            // this.dataService.notifyMessage(`Error: ${errorMsg}`);
+            // throw(new Error(errorMsg));
+        }
+    }
+
+    checkNodeSyntax(node: INode, prodList: IProcedure[], prod: IProcedure, prodIndex: number) {
+        if (prod.type === ProcedureTypes.Else || prod.type === ProcedureTypes.Elseif) {
+            if (prodIndex === 0 || prodList[prodIndex - 1].type !== ProcedureTypes.Elseif && prodList[prodIndex - 1].type !== ProcedureTypes.If) {
+                this.processProdError(node, prod, `Missing If statement in "${node.name}"`);
+            }
+            return true;
+        } else if (prod.type === ProcedureTypes.Break || prod.type === ProcedureTypes.Continue) {
+            let currentProd = prod;
+            while (currentProd.parent) {
+                if (currentProd.parent.type === ProcedureTypes.Foreach || currentProd.parent.type === ProcedureTypes.While) {
+                    return true;
+                }
+                currentProd = currentProd.parent;
+            }
+            this.processProdError(node, prod, `Break/Continue statement must be inside a For/While loop in "${node.name}"`);
+        }
+        return true;
+    }
+
+    checkProdValidity(node: INode, prodList: IProcedure[]) {
+        let prodIndex = 0;
         for (const prod of prodList) {
             // ignore the return, comment and disabled procedures
-            if (prod.type === ProcedureTypes.Return || prod.type === ProcedureTypes.Comment || !prod.enabled) { continue; }
+            if (prod.type === ProcedureTypes.Return || prod.type === ProcedureTypes.Comment || !prod.enabled) {
+                prodIndex++;
+                continue;
+            }
+
+            // check if there's any wrong syntax i.e. else-if/else without if, continue/break not inside loops
+            this.checkNodeSyntax(node, prodList, prod, prodIndex);
+
             // if there's any invalid argument, flag as having error
+            let hasArgError = false;
             for (const arg of prod.args) {
                 if (arg.invalidVar) {
-                    node.hasError = true;
-                    prod.hasError = true;
-                    InvalidECheck = true;
+                    this.processProdError(node, prod, null);
+                    hasArgError = true;
                 }
             }
-            // if (prod.argCount > 0 && prod.args[0].invalidVar) {
-            //     node.hasError = true;
-            //     prod.hasError = true;
-            //     InvalidECheck = true;
-            // }
+            if (hasArgError) {
+                this.processProdError(null, null, `Invalid Argument(s) in "${node.name}"`);
+            }
 
             // for start node constant procedures (start node parameters)
-            if (prod.type === ProcedureTypes.Constant) {
-                // resolve start node input (URL + File parameters) ... to be revised
-                // flag error if catch error (invalid argument value)
-                try {
-                    prod.resolvedValue = await CodeUtils.getStartInput(prod.args[1], prod.meta.inputMode);
-                } catch (ex) {
-                    node.hasError = true;
-                    prod.hasError = true;
-                    if (ex.message.indexOf('HTTP') !== -1 || ex.message.indexOf('File Reading') !== -1) {
-                        document.getElementById('spinner-off').click();
-                        document.getElementById('Console').click();
-                        this.dataService.flagModifiedNode(this.dataService.flowchart.nodes[0].id);
-                        const _category = this.isDev ? 'dev' : 'execute';
-                        this.googleAnalyticsService.trackEvent(_category, `error: Reserved Word Argument`,
-                            'click', performance.now() - this.startTime);
-                        this.dataService.log(`<h4 style="padding: 2px 0px 2px 0px; color:red;">Error: ${ex.message}</h4>`);
-                        throw(ex);
-                    }
-                    InvalidECheck = true;
-                }
-
-                // if there's no value for the parameter name or parameter value -> flag error (empty argument)
-                if (!prod.args[0].value || (!prod.args[1].value && prod.args[1].value !== 0 && prod.args[1].value !== false)) {
-                    node.hasError = true;
-                    prod.hasError = true;
-                    EmptyECheck = true;
-                }
-            // any other procedure type that is not start node constant
-            } else {
+            if (prod.type !== ProcedureTypes.Constant) {
                 for (const arg of prod.args) {
                     // ignore arguments that have argument name starting with "_" ("__model__", "__constant__", ...)
                     if (arg.name[0] === '_' || arg.type === 5) {
@@ -510,19 +391,44 @@ export class ExecuteComponent {
                     }
                     // if the argument value is empty -> flag error (empty argument)
                     if (arg.value !== 0 && arg.value !== false && !arg.value) {
-                        node.hasError = true;
-                        prod.hasError = true;
-                        EmptyECheck = true;
+                        this.processProdError(node, prod, null);
+                        hasArgError = true;
                     }
                 }
             }
+            if (hasArgError) {
+                this.processProdError(null, null, `Empty Argument(s) in "${node.name}"`);
+            }
+
             if (prod.children) {
-                const childrenCheck = this.checkProdValidity(node, prod.children);
-                InvalidECheck = InvalidECheck || childrenCheck[0];
-                EmptyECheck = EmptyECheck || childrenCheck[1];
+                this.checkProdValidity(node, prod.children);
+            }
+            prodIndex++;
+        }
+    }
+
+    async checkStartNodeInput() {
+        const node = this.dataService.flowchart.nodes[0];
+        for (const prod of node.procedure) {
+            if (prod.type === ProcedureTypes.Constant) {
+                // resolve start node input (URL + File parameters) ... to be revised
+                // flag error if catch error (invalid argument value)
+                try {
+                    prod.resolvedValue = await CodeUtils.getStartInput(prod.args[1], prod.meta.inputMode);
+                } catch (ex) {
+                    this.processProdError(node, prod, null);
+                    if (ex.message.indexOf('HTTP') !== -1 || ex.message.indexOf('File Reading') !== -1) {
+                        this.processProdError(null, null, ex.message);
+                    }
+                }
+                // if there's no value for the parameter name or parameter value -> flag error (empty argument)
+                if (!prod.args[0].value || (!prod.args[1].value && prod.args[1].value !== 0 && prod.args[1].value !== false)) {
+                    this.processProdError(node, prod, 'Empty Arguments');
+                }
+            // any other procedure type that is not start node constant
             }
         }
-        return [InvalidECheck, EmptyECheck]
+        return;
     }
 
     extractAnswerList(flowchart: any): any {
@@ -708,18 +614,22 @@ export class ExecuteComponent {
             'terminated': false
         };
 
-        if (node.hasError){
+        if (node.hasError) {
+            const invalidErr = this.prodErrorList.invalid.join('\n');
+            const emptyErr = this.prodErrorList.empty.join('\n');
+            const otherErr = this.prodErrorList.other.join('\n');
+            const Err = (invalidErr + '\n' + emptyErr + '\n' + otherErr).replace(/^\s+|\s+$/g, '');
+            // this.processProdError(null, null, 'Error: Invalid Argument detected. Check marked node(s) and procedure(s)!');
             document.getElementById('Console').click();
-            this.dataService.log('<h4 style="padding: 2px 0px 2px 0px; style="color:red">Error: Invalid Argument ' +
-                                    'detected. Check marked node(s) and procedure(s)!</h5>');
+            this.dataService.log('<h4 style="padding: 2px 0px 2px 0px; color:red">Error:</h4><h4 style="padding: 2px 0px 2px 20px; color:red">' +
+                                 Err.replace(/\n/g, '</h4><h4 style="padding: 2px 0px 2px 20px; color:red">') + '</h4>');
             document.getElementById('spinner-off').click();
             this.dataService.flagModifiedNode(this.dataService.flowchart.nodes[0].id);
-            const _category = this.isDev ? 'dev' : 'execute';
-            this.googleAnalyticsService.trackEvent(_category, `error: Reserved Word Argument`,
-                'click', performance.now() - this.startTime);
-            throw new Error('Reserved Word Argument');
+            // const _category = this.isDev ? 'dev' : 'execute';
+            // this.googleAnalyticsService.trackEvent(_category, `error: Reserved Word Argument`,
+            //     'click', performance.now() - this.startTime);
+            throw new Error('\n' + Err);
         }
-        // const consoleLength = params.console.length;
 
         let fnString = '';
         const startTime = performance.now();
