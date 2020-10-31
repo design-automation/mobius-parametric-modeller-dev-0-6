@@ -1187,6 +1187,9 @@ export function Stitch(__model__: GIModel, entities: TId|TId[]): TId[] {
             const b_norm_tol: [number, number] = map_edge_i_to_tol.get(b_edge_i);
             if (_stitchOverlap(a_bbox, b_bbox)) {
                 // isect is [t, u, new_xy] or null
+                //
+                // TODO decide what to do about t_type and u_type... currently they are not used
+                //
                 const isect: [[number, number], [number, number], Txy] = _stitchIntersect(a_xys, b_xys, a_norm_tol, b_norm_tol);
                 // console.log("=======")
                 // console.log("a_xys", a_xys)
@@ -1202,30 +1205,34 @@ export function Stitch(__model__: GIModel, entities: TId|TId[]): TId[] {
                     // get or create the new posi
                     let new_posi_i: number = null;
                     // check if we are at the start or end of 'a' edge
-                    if (t_type === -1) {
+                    const a_reuse_sta_posi: boolean = Math.abs(t) < 1e-6;
+                    const a_reuse_end_posi: boolean = Math.abs(t - 1) < 1e-6;
+                    if (a_reuse_sta_posi) {
                         new_posi_i = a_posis_i[0];
-                    } else if (t_type === 1) {
+                    } else if (a_reuse_end_posi) {
                         new_posi_i = a_posis_i[1];
                     }
                     // check if we are at the start or end of 'b' edge
-                    if (u_type === -1) {
+                    const b_reuse_sta_posi: boolean = Math.abs(u) < 1e-6;
+                    const b_reuse_end_posi: boolean = Math.abs(u - 1) < 1e-6;
+                    if (b_reuse_sta_posi) {
                         new_posi_i = b_posis_i[0];
-                    } else if (u_type === 1) {
+                    } else if (b_reuse_end_posi) {
                         new_posi_i = b_posis_i[1];
                     }
                     // make a new position if we have an isect,
-                    if (new_posi_i === null && (t_type === 0 || u_type === 0)) {
+                    if (new_posi_i === null) {
                         new_posi_i = __model__.modeldata.geom.add.addPosi();
                         __model__.modeldata.attribs.add.setPosiCoords(new_posi_i, [new_xy[0], new_xy[1], 0]);
                     }
                     // store the isects if there are any
-                    if (t_type === 0) {
+                    if (!a_reuse_sta_posi && !a_reuse_end_posi) {
                         if (!map_edge_i_to_isects.has(a_edge_i)) {
                             map_edge_i_to_isects.set(a_edge_i, []);
                         }
                         map_edge_i_to_isects.get(a_edge_i).push( [t, new_posi_i] );
                     }
-                    if (u_type === 0) {
+                    if (!b_reuse_sta_posi && !b_reuse_end_posi) {
                         if (!map_edge_i_to_isects.has(b_edge_i)) {
                             map_edge_i_to_isects.set(b_edge_i, []);
                         }
@@ -1246,10 +1253,29 @@ export function Stitch(__model__: GIModel, entities: TId|TId[]): TId[] {
         // isect [t, posi_i]
         const isects: [number, number][] = map_edge_i_to_isects.get(edge_i);
         isects.sort( (a, b) => a[0] - b[0] );
-        const posis_i: number[] = isects.map(isect => isect[1]);
-        const new_edges_i: number[] = __model__.modeldata.geom.modify.insertVertsIntoWire(edge_i, posis_i);
-        for (const new_edge_i of new_edges_i) {
-            all_new_edges_i.push(new_edge_i);
+        const new_sta: boolean = isects[0][0] < 0;
+        const new_end: boolean = isects[isects.length - 1][0] > 1;
+        let isects_mid: [number, number][] = isects;
+        if (new_sta) { isects_mid = isects_mid.slice(1); }
+        if (new_end) { isects_mid = isects_mid.slice(0, isects_mid.length - 1); }
+        if (new_sta) {
+            const posi_i: number = isects[0][1];
+            const pline_i: number = __model__.modeldata.geom.nav.navAnyToPline(EEntType.EDGE, edge_i)[0];
+            const new_sta_edge_i: number = __model__.modeldata.geom.modify_pline.appendVertToOpenPline(pline_i, posi_i, false);
+            all_new_edges_i.push(new_sta_edge_i);
+        }
+        if (new_end) {
+            const posi_i: number = isects[isects.length - 1][1];
+            const pline_i: number = __model__.modeldata.geom.nav.navAnyToPline(EEntType.EDGE, edge_i)[0];
+            const new_end_edge_i: number = __model__.modeldata.geom.modify_pline.appendVertToOpenPline(pline_i, posi_i, true);
+            all_new_edges_i.push(new_end_edge_i);
+        }
+        if (isects_mid.length > 0) {
+            const posis_i: number[] = isects_mid.map(isect => isect[1]);
+            const new_edges_i: number[] = __model__.modeldata.geom.modify.insertVertsIntoWire(edge_i, posis_i);
+            for (const new_edge_i of new_edges_i) {
+                all_new_edges_i.push(new_edge_i);
+            }
         }
     }
     // check if any new edges are zero length
