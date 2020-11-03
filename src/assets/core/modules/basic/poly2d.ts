@@ -1096,9 +1096,10 @@ function _offsetPline(__model__: GIModel, pline_i: number, dist: number,
  * ~
  * @param __model__
  * @param entities A list polylines or polygons, or entities from which polylines or polygons can be extracted.
+ * @param tolerance The tolerance for extending open plines if they are almost intersecting. 
  * @returns Copies of the input polyline and polygons, stiched.
  */
-export function Stitch(__model__: GIModel, entities: TId|TId[]): TId[] {
+export function Stitch(__model__: GIModel, entities: TId|TId[], tolerance: number): TId[] {
     entities = arrMakeFlat(entities) as TId[];
     if (isEmptyArr(entities)) {
         return [];
@@ -1135,7 +1136,6 @@ export function Stitch(__model__: GIModel, entities: TId|TId[]): TId[] {
     //     }
     // }
     // set tolerance for intersections
-    const tol = 1;
     const edges_i: number[] = [];
     // do stitch
     for (const [ent_type, ent_i] of new_ents_arr) {
@@ -1149,11 +1149,11 @@ export function Stitch(__model__: GIModel, entities: TId|TId[]): TId[] {
                 let edge_tol: [number, number] = [0, 0];
                 if (!is_closed) {
                     if ( wire_edges_i.length === 1) {
-                        edge_tol = [-tol, tol];
+                        edge_tol = [-tolerance, tolerance];
                     } else if (i === 0) { // first edge
-                        edge_tol = [-tol, 0];
+                        edge_tol = [-tolerance, 0];
                     } else if (i === wire_edges_i.length - 1) { // last edge
-                        edge_tol = [0, tol];
+                        edge_tol = [0, tolerance];
                     }
                     map_edge_i_to_tol.set(wire_edge_i, edge_tol);
                 }
@@ -1284,7 +1284,7 @@ export function Stitch(__model__: GIModel, entities: TId|TId[]): TId[] {
         const posis_i: number[] = __model__.modeldata.geom.nav.navAnyToPosi(EEntType.EDGE, edge_i);
         const xyzs: Txyz[] = posis_i.map(posi_i => __model__.modeldata.attribs.query.getPosiCoords(posi_i));
         const dist: number = distanceManhattan(xyzs[0], xyzs[1]);
-        if (dist === 0) {
+        if (dist < 1e-6) {
             // we are going to del this posi
             const del_posi_i: number = posis_i[0];
             // get the vert of this edge
@@ -1348,7 +1348,7 @@ function _stitchGetEdgeData(__model__: GIModel, edge_i: number, tol: [number, nu
     const x_max: number = (xys[0][0] > xys[1][0] ? xys[0][0] : xys[1][0]) + tol_bb;
     const y_max: number = (xys[0][1] > xys[1][1] ? xys[0][1] : xys[1][1]) + tol_bb;
     map_edge_i_to_bbox.set( edge_i, [[x_min, y_min], [x_max, y_max]] );
-    console.log("TOL",tol_bb, [[x_min, y_min], [x_max, y_max]] )
+    // console.log("TOL",tol_bb, [[x_min, y_min], [x_max, y_max]] )
     // save the tolerance
     map_edge_i_to_tol.set( edge_i, norm_tol);
 }
