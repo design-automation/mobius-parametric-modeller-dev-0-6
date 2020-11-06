@@ -164,7 +164,8 @@ export class SaveJavascriptComponent {
             `return {"model": __params__.model, "result": result};\n` +
             '/** * **/' +
             `\n\n}\n\n` +
-            `module.exports = ${funcName};\n`;
+            `export default ${funcName};\n`;
+            // `module.exports = ${funcName};\n`;
 
         // fnString = beautify(fnString, { indent_size: 4, space_in_empty_paren: true });
         const blob = new Blob([fnString], {type: 'application/json'});
