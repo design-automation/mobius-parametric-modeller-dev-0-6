@@ -15,6 +15,7 @@ import { SaveFileComponent } from '@shared/components/file';
 import { _parameterTypes, _varString } from '@assets/core/_parameterTypes';
 import { isArray } from 'util';
 import JSZip from 'jszip';
+import { WindowMessageComponent } from '@shared/components/window-message/window-message.component';
 
 // function pythonList(x, l) {
 //     if (x < 0) {
@@ -224,6 +225,7 @@ export class ExecuteComponent {
         empty: string[];
         other: string[];
     };
+    private end_hud: string;
 
     constructor(private dataService: DataService,
                 private dataOutputService: DataOutputService,
@@ -299,6 +301,12 @@ export class ExecuteComponent {
                     await this.executeFlowchart();
                     this.dataService.finalizeLog();
                     this.dataService.log('<br>');
+                    WindowMessageComponent.SendData({
+                        messageType: 'execute_end',
+                        data: {
+                          hud: this.end_hud
+                        }
+                    });
                 }, 20);
             }
         } catch (ex) {
@@ -748,6 +756,7 @@ export class ExecuteComponent {
 
             if (node.type === 'end') {
                 node.output.value = result;
+                this.end_hud = params['model'].modeldata.attribs.query.getModelAttribVal('hud') || null;
             } else {
                 node.output.value = params['model'];
             }
