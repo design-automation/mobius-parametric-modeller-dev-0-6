@@ -298,6 +298,7 @@ export function modifyVarArg(arg: IArgument, toLower = true) {
 export function modifyArgument(procedure: IProcedure, argIndex: number, nodeProdList: IProcedure[]) {
     procedure.args[argIndex].usedVars = [];
     if (!procedure.args[argIndex].value || procedure.args[argIndex].value === '"___LONG_STRING_DATA___"') {
+        if (!procedure.args[argIndex].jsValue) { return; }
         procedure.args[argIndex].jsValue = procedure.args[argIndex].jsValue.replace(/^\"|^\'|\'$|\"$/g, '\`');
         return;
     }
