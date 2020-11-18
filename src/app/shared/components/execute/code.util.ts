@@ -24,6 +24,10 @@ export class CodeUtils {
 
         prod.hasError = false;
         let specialPrint = false;
+        let loopVarIndex = null;
+        if (prod.children) {
+            loopVarIndex = existingVars.length;
+        }
 
         let codeStr: string[] = [];
         const args = prod.args;
@@ -37,6 +41,7 @@ export class CodeUtils {
         if (isMainFlowchart && prod.type !== ProcedureTypes.Else && prod.type !== ProcedureTypes.Elseif) {
             codeStr.push(`__params__.currentProcedure[0] = "${prod.ID}";`);
         }
+
 
         switch ( prod.type ) {
             case ProcedureTypes.Variable:
@@ -387,6 +392,9 @@ export class CodeUtils {
             //     codeStr = codeStr.concat(CodeUtils.getProcedureCode(p, existingVars, isMainFlowchart, functionName, usedFunctions));
             // }
             codeStr.push(`}`);
+            if (loopVarIndex) {
+                existingVars.splice(loopVarIndex);
+            }
         }
         return codeStr;
     }
