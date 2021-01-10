@@ -98183,7 +98183,7 @@
 					"sources": [
 						{
 							"fileName": "libs/geo-info/io_geojson.ts",
-							"line": 502,
+							"line": 515,
 							"character": 27
 						}
 					]
@@ -98288,7 +98288,7 @@
 					"sources": [
 						{
 							"fileName": "libs/geo-info/io_geojson.ts",
-							"line": 482,
+							"line": 495,
 							"character": 28
 						}
 					]
@@ -98381,7 +98381,7 @@
 					"sources": [
 						{
 							"fileName": "libs/geo-info/io_geojson.ts",
-							"line": 366,
+							"line": 377,
 							"character": 24
 						}
 					]
@@ -98486,7 +98486,7 @@
 					"sources": [
 						{
 							"fileName": "libs/geo-info/io_geojson.ts",
-							"line": 447,
+							"line": 460,
 							"character": 29
 						}
 					]
@@ -98579,7 +98579,7 @@
 					"sources": [
 						{
 							"fileName": "libs/geo-info/io_geojson.ts",
-							"line": 323,
+							"line": 332,
 							"character": 25
 						}
 					]
@@ -98687,7 +98687,7 @@
 					"sources": [
 						{
 							"fileName": "libs/geo-info/io_geojson.ts",
-							"line": 417,
+							"line": 430,
 							"character": 29
 						}
 					]
@@ -98783,7 +98783,7 @@
 					"sources": [
 						{
 							"fileName": "libs/geo-info/io_geojson.ts",
-							"line": 291,
+							"line": 299,
 							"character": 25
 						}
 					]
@@ -99006,7 +99006,7 @@
 					"sources": [
 						{
 							"fileName": "libs/geo-info/io_geojson.ts",
-							"line": 221,
+							"line": 229,
 							"character": 26
 						}
 					]
@@ -99121,7 +99121,7 @@
 					"sources": [
 						{
 							"fileName": "libs/geo-info/io_geojson.ts",
-							"line": 520,
+							"line": 533,
 							"character": 31
 						}
 					]
@@ -99247,7 +99247,7 @@
 					"sources": [
 						{
 							"fileName": "libs/geo-info/io_geojson.ts",
-							"line": 543,
+							"line": 558,
 							"character": 31
 						}
 					]
