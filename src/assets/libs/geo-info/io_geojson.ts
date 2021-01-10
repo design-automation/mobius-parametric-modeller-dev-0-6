@@ -162,17 +162,25 @@ export function importGeojson(model: GIModel, geojson_str: string, elevation: nu
             case EGeojsoFeatureType.POINT:
                 point_f.push(feature);
                 const point_i: number = _addPointToModel(model, feature, proj_obj, rot_matrix, elevation);
-                points_i.add(point_i);
+                if (point_i !== null) {
+                    points_i.add(point_i);
+                }
                 break;
             case EGeojsoFeatureType.LINESTRING:
                 linestring_f.push(feature);
                 const pline_i: number = _addPlineToModel(model, feature, proj_obj, rot_matrix, elevation);
-                plines_i.add(pline_i);
+                if (pline_i !== null) {
+                    plines_i.add(pline_i);
+                }
                 break;
             case EGeojsoFeatureType.POLYGON:
                 polygon_f.push(feature);
                 const pgon_i: number = _addPgonToModel(model, feature, proj_obj, rot_matrix, elevation);
-                pgons_i.add(pgon_i);
+                console.log("polygon", pgon_i)
+
+                if (pgon_i !== null) {
+                    pgons_i.add(pgon_i);
+                }
                 break;
             case EGeojsoFeatureType.MULTIPOINT:
                 multipoint_f.push(feature);
@@ -290,6 +298,7 @@ function _createProjection(model: GIModel): proj4.Converter {
  */
 function _addPointToModel(model: GIModel, point: any,
         proj_obj: proj4.Converter, rot_matrix: Matrix4, elevation: number): number {
+    if (point.geometry.coordinates.length === 0) { return null; }
     // add feature
     let xyz: Txyz = _xformFromLongLatToXYZ(point.geometry.coordinates, proj_obj, elevation) as Txyz;
     // rotate to north
@@ -322,6 +331,8 @@ function _addPointToModel(model: GIModel, point: any,
  */
 function _addPlineToModel(model: GIModel, linestring: any,
         proj_obj: proj4.Converter, rot_matrix: Matrix4, elevation: number): number {
+    // check that the polyline has 2 or more positions
+    if (linestring.geometry.coordinates.length < 2) { return null; }
     // add feature
     let xyzs: Txyz[] = _xformFromLongLatToXYZ(linestring.geometry.coordinates, proj_obj, elevation) as Txyz[];
     const first_xyz: Txyz = xyzs[0];
@@ -365,6 +376,8 @@ function _addPlineToModel(model: GIModel, linestring: any,
  */
 function _addPgonToModel(model: GIModel, polygon: any,
         proj_obj: proj4.Converter, rot_matrix: Matrix4, elevation: number): number {
+    // check that the first ring has 2 or more positions
+    if (polygon.geometry.coordinates.length && polygon.geometry.coordinates[0].length < 2) { return null; }
     // add feature
     const rings: number[][] = [];
     for (const ring of polygon.geometry.coordinates) {
@@ -527,8 +540,10 @@ function _xformFromLongLatToXYZ(
         long_lat_arr = long_lat_arr as [number, number][];
         const xyzs_xformed: Txyz[] = [];
         for (const long_lat of long_lat_arr) {
-            const xyz: Txyz = _xformFromLongLatToXYZ(long_lat, proj_obj, elevation) as Txyz;
-            xyzs_xformed.push(xyz);
+            if (long_lat.length >= 2) {
+                const xyz: Txyz = _xformFromLongLatToXYZ(long_lat, proj_obj, elevation) as Txyz;
+                xyzs_xformed.push(xyz);
+            }
         }
         return xyzs_xformed as Txyz[];
     }
