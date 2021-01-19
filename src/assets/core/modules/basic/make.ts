@@ -1458,7 +1458,7 @@ export function Cut(__model__: GIModel, entities: TId|TId[], plane: TPlane, meth
     // slice polylines
     for (const exist_pline_i of Array.from(set_plines)) {
         const sliced: [number[], number[]] =
-            _cutCreateEnts(__model__, EEntType.PLINE, exist_pline_i, plane_tjs, edge_to_isect_posis,
+            _cutCreateEnts(__model__, EEntType.PLINE, exist_pline_i, edge_to_isect_posis,
                 posi_to_copies, cut_posi_to_copies, posi_to_tjs, method);
         for (const new_pline_i of sliced[0]) { above.push([EEntType.PLINE, new_pline_i]); }
         for (const new_pline_i of sliced[1]) { below.push([EEntType.PLINE, new_pline_i]); }
@@ -1467,7 +1467,7 @@ export function Cut(__model__: GIModel, entities: TId|TId[], plane: TPlane, meth
     for (const exist_pgon_i of Array.from(set_pgons)) {
         // TODO slice polygons with holes
         const sliced: [number[], number[]] =
-            _cutCreateEnts(__model__, EEntType.PGON, exist_pgon_i, plane_tjs, edge_to_isect_posis,
+            _cutCreateEnts(__model__, EEntType.PGON, exist_pgon_i, edge_to_isect_posis,
                 posi_to_copies, cut_posi_to_copies, posi_to_tjs, method);
         for (const new_pgon_i of sliced[0]) { above.push([EEntType.PGON, new_pgon_i]); }
         for (const new_pgon_i of sliced[1]) { below.push([EEntType.PGON, new_pgon_i]); }
@@ -1496,7 +1496,7 @@ function _cutEdges(__model__: GIModel, edges_i: number[], plane_tjs: THREE.Plane
     const smap_cut_posi_to_copies: number[] = []; // sparse array
     // loop through each edge
     for (const edge_i of edges_i) {
-        // console.log("Edge = ", edge_i);
+        // console.log("=============== Edge = ", edge_i);
         const edge_posis_i: number[] = __model__.modeldata.geom.nav.navAnyToPosi(EEntType.EDGE, edge_i);
         if (edge_posis_i.length !== 2) { continue; }
         const sorted_edge_posis_i: number[] = Array.from(edge_posis_i);
@@ -1533,21 +1533,27 @@ function _cutCreatePosi(__model__: GIModel, edge_i: number, edge_posis_i: number
     // console.log("Cutting edge: edge_i, d0, d1", edge_i, d0, d1)
     // if both posis are on the same side of the plane, then no intersection, so return null
     if ((d0 > 0) && (d1 > 0)) {
-        // console.log('Cutting edge: edge vertices are above the plane')
+        // console.log('Cutting edge: edge vertices are above the plane, so no isect')
         return null;
     }
     if ((d0 < 0) && (d1 < 0)) {
-        // console.log('Cutting edge: edge vertices are both below the plane')
+        // console.log('Cutting edge: edge vertices are both below the plane, so no isect')
+        return null;
+    }
+    // check if this is a zero length edge
+    // console.log("length of edge = ", posi0_tjs.distanceTo(posi1_tjs))
+    if (posi0_tjs.distanceTo(posi1_tjs) === 0) {
+        // console.log('Cutting edge: edge is zero length, so no isect')
         return null;
     }
     // if either position is very close to the plane, check of V intersection
     // a V intersection is where the plane touches a vertex where two edges meet in a V shape
     // and where both edges are on the same side of the plane
-    if ((Math.abs(d0) < 1e-6) && _cutStartVertexIsV(__model__, edge_i, plane_tjs, d1, smap_posi_to_tjs)) {
+    if ((Math.abs(d0) === 0) && _cutStartVertexIsV(__model__, edge_i, plane_tjs, d1, smap_posi_to_tjs)) {
         // console.log('Cutting edge: first vertex is V, so no isect');
         return null;
     }
-    if ((Math.abs(d1) < 1e-6) && _cutEndVertexIsV(__model__, edge_i, plane_tjs, d0, smap_posi_to_tjs)) {
+    if ((Math.abs(d1) === 0) && _cutEndVertexIsV(__model__, edge_i, plane_tjs, d0, smap_posi_to_tjs)) {
         // console.log('Cutting edge: second vertex is V, so no isect');
         return null;
     }
@@ -1686,8 +1692,10 @@ function _cutCopyEnt(__model__: GIModel, ent_type: EEntType, ent_i: number, exis
 // creates new ents
 // if the ent is not cut by the plane, the ent will be copies (with new posis)
 // if the ent is cut, a new ent will be created
-function _cutCreateEnts(__model__: GIModel, ent_type: EEntType, ent_i: number, plane_tjs: THREE.Plane,
-        edge_to_isect_posis: number[][], posi_to_copies: number[], cut_posi_to_copies: number[], posi_to_tjs: [THREE.Vector3, number][],
+function _cutCreateEnts(__model__: GIModel, ent_type: EEntType, ent_i: number,
+        edge_to_isect_posis: number[][],
+        posi_to_copies: number[], cut_posi_to_copies: number[],
+        posi_to_tjs: [THREE.Vector3, number][],
         method: _ECutMethod): [number[], number[]] {
     // get wire and posis
     const wire_i: number = __model__.modeldata.geom.nav.navAnyToWire(ent_type, ent_i)[0];
@@ -1711,6 +1719,7 @@ function _cutCreateEnts(__model__: GIModel, ent_type: EEntType, ent_i: number, p
     let num_cuts = 0;
     for (let i = 0; i < num_posis - 1; i++) {
         const edge_posis_i: [number, number] = [wire_posis_ex_i[i], wire_posis_ex_i[i + 1]];
+        // find isect or null
         edge_posis_i.sort();
         const isect_posi_i: number = edge_to_isect_posis[edge_posis_i[0]][edge_posis_i[1]];
         slice_posis_i[index][slice_posis_i[index].length - 1].push(wire_posis_ex_i[i]);
@@ -1770,13 +1779,18 @@ function _cutCreateEnts(__model__: GIModel, ent_type: EEntType, ent_i: number, p
         case _ECutMethod.KEEP_BOTH:
         case _ECutMethod.KEEP_ABOVE:
             for (const posis_i of slice_posis_i[0]) {
-                if (ent_type === EEntType.PLINE) {
-                    const copy_posis_i: number[] = _cutGetPosis(__model__, posis_i, posi_to_copies);
-                    above.push( __model__.modeldata.geom.add.addPline(copy_posis_i, false));
-                } else {
-                    const copy_posis_i: number[] = _cutGetPosis(__model__, posis_i, posi_to_copies);
-                    above.push( __model__.modeldata.geom.add.addPgon(copy_posis_i));
+                const new_ent_i: number = _cutCreateEnt(__model__, ent_type, posis_i, posi_to_copies);
+                if (new_ent_i !== null) {
+                    above.push(new_ent_i);
                 }
+                // const filt_posis_i: number[] = _cutFilterShortEdges(__model__, posis_i, posi_to_tjs);
+                // if (ent_type === EEntType.PLINE) {
+                //     const copy_posis_i: number[] = _cutGetPosis(__model__, filt_posis_i, posi_to_copies);
+                //     above.push( __model__.modeldata.geom.add.addPline(copy_posis_i, false));
+                // } else {
+                //     const copy_posis_i: number[] = _cutGetPosis(__model__, filt_posis_i, posi_to_copies);
+                //     above.push( __model__.modeldata.geom.add.addPgon(copy_posis_i));
+                // }
             }
             break;
         default:
@@ -1786,13 +1800,18 @@ function _cutCreateEnts(__model__: GIModel, ent_type: EEntType, ent_i: number, p
         case _ECutMethod.KEEP_BOTH:
         case _ECutMethod.KEEP_BELOW:
             for (const posis_i of slice_posis_i[1]) {
-                if (ent_type === EEntType.PLINE) {
-                    const copy_posis_i: number[] = _cutGetPosis(__model__, posis_i, posi_to_copies);
-                    below.push( __model__.modeldata.geom.add.addPline(copy_posis_i, false));
-                } else {
-                    const copy_posis_i: number[] = _cutGetPosis(__model__, posis_i, posi_to_copies);
-                    below.push( __model__.modeldata.geom.add.addPgon(copy_posis_i));
+                const new_ent_i: number = _cutCreateEnt(__model__, ent_type, posis_i, posi_to_copies);
+                if (new_ent_i !== null) {
+                    below.push(new_ent_i);
                 }
+                // const filt_posis_i: number[] = _cutFilterShortEdges(__model__, posis_i, posi_to_tjs);
+                // if (ent_type === EEntType.PLINE) {
+                //     const copy_posis_i: number[] = _cutGetPosis(__model__, filt_posis_i, posi_to_copies);
+                //     below.push( __model__.modeldata.geom.add.addPline(copy_posis_i, false));
+                // } else {
+                //     const copy_posis_i: number[] = _cutGetPosis(__model__, filt_posis_i, posi_to_copies);
+                //     below.push( __model__.modeldata.geom.add.addPgon(copy_posis_i));
+                // }
             }
             break;
         default:
@@ -1800,7 +1819,35 @@ function _cutCreateEnts(__model__: GIModel, ent_type: EEntType, ent_i: number, p
     }
     return [above, below];
 }
-
+// filter very short edges
+function _cutFilterShortEdges(__model__: GIModel, posis_i: number[]): number[] {
+    const new_posis_i: number[] = [posis_i[0]];
+    let xyz0: Txyz = __model__.modeldata.attribs.query.getPosiCoords(posis_i[0]);
+    for (let i = 1; i < posis_i.length; i++) {
+        const xyz1: Txyz = __model__.modeldata.attribs.query.getPosiCoords(posis_i[i]);
+        if (distance(xyz0, xyz1) > 1e-6) {
+            new_posis_i.push(posis_i[i]);
+        }
+        xyz0 = xyz1;
+    }
+    return new_posis_i;
+}
+// creates new ents
+function _cutCreateEnt(__model__: GIModel, ent_type: EEntType, posis_i: number[], posi_to_copies: number[]): number {
+    // filter shrt edges
+    const filt_posis_i: number[] = _cutFilterShortEdges(__model__, posis_i);
+    if (ent_type === EEntType.PLINE) {
+        // create polyline
+        if (filt_posis_i.length < 2) { return null; }
+        const copy_posis_i: number[] = _cutGetPosis(__model__, filt_posis_i, posi_to_copies);
+        return __model__.modeldata.geom.add.addPline(copy_posis_i, false);
+    } else {
+        // create polygon
+        if (filt_posis_i.length < 3) { return null; }
+        const copy_posis_i: number[] = _cutGetPosis(__model__, filt_posis_i, posi_to_copies);
+        return __model__.modeldata.geom.add.addPgon(copy_posis_i);
+    }
+}
 // ================================================================================================
 
 
