@@ -210,7 +210,7 @@ export class GIAttribsIO {
         const other_attribs: Map<string, TAttribMap> = attribs_maps[EEntTypeStr[ ent_type ]];
         const this_attribs: Map<string, TAttribMap> = this._attribs_maps[EEntTypeStr[ ent_type ]];
         other_attribs.forEach( other_attrib => {
-            if (other_attrib.numEnts() > 0) {
+            //if (other_attrib.numEnts() > 0) {
                 // get the name
                 const name: string = other_attrib.getName();
                 // get or create the attrib
@@ -225,7 +225,7 @@ export class GIAttribsIO {
                 }
                 // merge
                 this_attrib.merge(other_attrib);
-            }
+            //}
         });
     }
     /**
@@ -239,7 +239,7 @@ export class GIAttribsIO {
         const other_attribs: Map<string, TAttribMap> = attribs_maps[EEntTypeStr[ ent_type ]];
         const this_attribs: Map<string, TAttribMap> = this._attribs_maps[EEntTypeStr[ ent_type ]];
         other_attribs.forEach( other_attrib => {
-            if (other_attrib.numEnts() > 0) {
+            // if (other_attrib.numEnts() > 0) {
                 // get the name
                 const name: string = other_attrib.getName();
                 // get or create the attrib
@@ -256,7 +256,7 @@ export class GIAttribsIO {
                 other_attrib.renumEnts(renum_map);
                 // merge
                 this_attrib.merge(other_attrib);
-            }
+            // }
         });
     }
     /**
@@ -267,13 +267,13 @@ export class GIAttribsIO {
     private _dumpAttribs(attribs_maps: IAttribsMaps, ent_type: EEntType) {
         const other_attribs: Map<string, TAttribMap> = attribs_maps[EEntTypeStr[ ent_type ]];
         other_attribs.forEach( other_attrib => {
-            if (other_attrib.numEnts() > 0) {
+            // if (other_attrib.numEnts() > 0) {
                 const this_attrib: TAttribMap = this._modeldata.attribs.add.addEntAttrib(
                     ent_type,
                     other_attrib.getName(),
                     other_attrib.getDataType());
                 this_attrib.dump(other_attrib);
-            }
+            // }
         });
     }
     /**
@@ -284,13 +284,13 @@ export class GIAttribsIO {
     private _dumpAttribsSelect(attribs_maps: IAttribsMaps, ent_type: EEntType, selected: Set<number>): void {
         const other_attribs: Map<string, TAttribMap> = attribs_maps[EEntTypeStr[ ent_type ]];
         other_attribs.forEach( other_attrib => {
-            if (other_attrib.numEnts() > 0) {
+            // if (other_attrib.numEnts() > 0) {
                 const this_attrib = this._modeldata.attribs.add.addEntAttrib(
                     ent_type,
                     other_attrib.getName(),
                     other_attrib.getDataType());
                 this_attrib.dumpEnts(other_attrib, selected);
-            }
+            // }
         });
     }
     /**
