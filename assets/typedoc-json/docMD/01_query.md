@@ -89,6 +89,13 @@ entities must not be part of the set of input entities, but must be welded to on
     Returns list of edges that are welded to polyline1, polyline2, or polyline3.
   
   
+## Edge  
+* **Description:** Returns ...  
+* **Parameters:**  
+  * *entities:* List of entities.  
+  * *edge_query_enum:* Enum, select the types of edges to return  
+* **Returns:** Entities, an edge or list of edges  
+  
 ## Type  
 * **Description:** Checks the type of an entity.
 ~
