@@ -128,6 +128,11 @@ export class SaveJavascriptComponent {
 
         if (this.dataService.mobiusSettings.debug === undefined) { this.dataService.mobiusSettings.debug = true; }
 
+        let printInput = `function printInp(`+ func.args.map(arg => arg.name).join(',') +`){\nconsole.log(` +
+        `"Calling function ${funcName}() with the following arguments:\\n" +\n`;
+        func.args.forEach(arg => printInput += `"  ${arg.name} = " + ${arg.name} + "\\n" +\n`);
+        printInput += `'')};\n`;
+
         fnString =
             `/**\n * to use this code: import ${funcName} from this js file as well as the GI module\n` +
             ` * run ${funcName} with the GI module as input along with other start node input\n` +
@@ -149,7 +154,9 @@ export class SaveJavascriptComponent {
             pythonListFunc +
             mergeInputsFunc +
             printFuncString +
-            `\n\nconst __params__ = {};\n` +
+            printInput +
+            `\n\n// printInp(${func.args.map(arg => arg.name).join(',')});\n` +
+            `const __params__ = {};\n` +
             `__params__["model"] = __modules__._model.__new__();\n` +
             `if (__model__) {\n` +
             `__modules__.io._importGI(__params__["model"], __model__);\n` +
