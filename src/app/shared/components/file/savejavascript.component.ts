@@ -7,9 +7,66 @@ import { IArgument } from '@models/code';
 import { DownloadUtils } from './download.utils';
 import { _varString } from '@assets/core/modules';
 // import {js as beautify} from 'js-beautify';
-import { mergeInputsFunc, printFuncString, pythonListFunc, ExecuteComponent } from '../execute/execute.component';
+import { mergeInputsFunc, pythonListFunc, ExecuteComponent } from '../execute/execute.component';
 import { InputType } from '@models/port';
 import { CodeUtils } from '@shared/components/execute/code.util';
+
+export const printFuncString = `
+function printFunc(_console, name, value){
+    let val;
+    if (!value) {
+        val = value;
+    } else if (value === '__null__') {
+        console.log('_ ' + name);
+        return value;
+    } else if (typeof value === 'number' || value === undefined) {
+        val = value;
+    } else if (typeof value === 'string') {
+        val = value;
+    } else if (value.constructor === [].constructor) {
+        let __list_check__ = false;
+        let __value_strings__ = [];
+        for (const __item__ of value) {
+            if (!__item__) {
+                __value_strings__.push('' + __item__);
+                continue;
+            }
+            if (__item__.constructor === [].constructor || __item__.constructor === {}.constructor) {
+                __list_check__ = true;
+            }
+            __value_strings__.push(JSON.stringify(__item__).replace(/,/g, ', '));
+        }
+        if (__list_check__) {
+            val = '[\\n' + __value_strings__.join(',\\n') + '\\n]';
+        } else {
+            val = '[' + __value_strings__.join(', ') + ']';
+        }
+    } else if (value.constructor === {}.constructor) {
+        let __list_check__ = false;
+        let __value_strings__ = [];
+        for (const __item__ in value) {
+            const __value__ = value[__item__];
+            if (!__value__) {
+                __value_strings__.push( __item__ + ': ' + __value__);
+                continue;
+            }
+            if (__value__.constructor === [].constructor || __value__.constructor === {}.constructor) {
+                __list_check__ = true;
+            }
+            __value_strings__.push(__item__ + ': ' + JSON.stringify(__value__).replace(/,/g, ', '));
+        }
+        if (__list_check__) {
+            val = '{\\n' +  __value_strings__.join(',\\n') + '\\n}';
+        } else {
+            val = '{' + __value_strings__.join(', ') + '}';
+        }
+    } else {
+        val = value;
+    }
+    console.log(name + ' = ' + val);
+    return val;
+}
+`;
 
 @Component({
   selector: 'javascript-save',
@@ -93,7 +150,7 @@ export class SaveJavascriptComponent {
         // for (const node of func.flowchart.nodes) {
         //     await  ExecuteComponent.resolveImportedUrl(node, false, node.type === 'start');
         // }
-        let fnString = CodeUtils.getFunctionString(func);
+        let fnString = CodeUtils.getFunctionString(func, true);
 
         for (const i of fl.functions) {
             // for (const node of i.flowchart.nodes) {

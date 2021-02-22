@@ -52,6 +52,16 @@ export class WindowMessageComponent {
                     });
                 });
                 break;
+            case 'get_localstorage_list':
+                let fileList = JSON.parse(localStorage.getItem('mobius_backup_list'));
+                if (!fileList) {
+                    fileList = [];
+                }
+                WindowMessageComponent.SendData({
+                    messageType: 'localstorage_list',
+                    file_list: fileList
+                });
+                break;
             // case 'set_param':
             // case 'load_url':
             case 'update':

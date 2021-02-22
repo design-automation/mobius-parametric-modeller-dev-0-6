@@ -713,7 +713,7 @@ export class CodeUtils {
         return [[codeStr, varsDefined], _terminateCheck];
     }
 
-    static getFunctionString(func: IFunction): string {
+    static getFunctionString(func: IFunction, printNodeName = false): string {
         let fullCode = `async function ${func.name}(__params__${func.args.map(arg => ', ' + arg.name + '_').join('')}){\n`;
 
         let fnCode = `var merged;\n`;
@@ -729,6 +729,9 @@ export class CodeUtils {
             nodeIndex ++;
             numRemainingOutputs[node.id] = node.output.edges.length;
             const nodeFuncName = `${func.name}_${node.id}`;
+            if (printNodeName) {
+                fnCode += `console.log("Executing Node: ${node.name}");\n`;
+            }
             if (node.type === 'start') {
                 fnCode += `let result_${nodeFuncName} = __params__.model;\n`;
             } else {

@@ -12,6 +12,8 @@ import * as Modules from '@modules';
 import { checkNodeValidity } from '@shared/parser';
 import { DownloadUtils } from '../file/download.utils';
 
+// import * as nbh from '@assets/unit_tests/neighbourhood.js'
+
 @Component({
     selector: 'panel-header',
     templateUrl: 'panel-header.component.html',
@@ -899,4 +901,34 @@ export class PanelHeaderComponent implements OnDestroy {
         this.dataService.notifyMessage(event.target.value);
         event.target.value = '';
     }
+
+    // runjs() {
+    //     const neighbourhood = nbh.default;
+    //     const road_art_w = 22
+    //     const road_sec_w = 21
+    //     const road_loc_w = 18
+    //     const part_art_d = 40
+    //     const part_sec_d = 30
+    //     const part_loc_d = 20
+    //     const part_og_d = 37
+    //     const part_og_w = 25
+    //     const plot_art_w = 19
+    //     const plot_sec_w = 10
+    //     const plot_loc_w = 10
+    //     const blk_art_num_og_d = 0
+    //     const blk_art_num_og_w = 3
+    //     const blk_sec_num_og_d = 0
+    //     const blk_sec_num_og_w = 3
+    //     const blk_loc_num_og_d = 2
+    //     const blk_loc_num_og_w = 6
+    //     const path_w = 6
+    //     const open_percent = 4.5
+    //     const amen_percent = 7.4
+    //     const r = neighbourhood(Modules, road_art_w, road_sec_w, road_loc_w, part_art_d, part_sec_d, 
+    //         part_loc_d, part_og_d, part_og_w, plot_art_w, plot_sec_w, plot_loc_w, 
+    //         blk_art_num_og_d, blk_art_num_og_w, blk_sec_num_og_d, 
+    //         blk_sec_num_og_w, blk_loc_num_og_d, blk_loc_num_og_w, 
+    //         path_w, open_percent, amen_percent)
+    //     r.then(x => console.log(x))
+    // }
 }
